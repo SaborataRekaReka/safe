@@ -1,0 +1,36 @@
+<svg width="420" height="420" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bandA" x1="54" y1="98" x2="356" y2="166" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A698E"/>
+      <stop offset="0.45" stop-color="#47C6D0"/>
+      <stop offset="1" stop-color="#A1EBF5"/>
+    </linearGradient>
+    <linearGradient id="bandB" x1="88" y1="184" x2="338" y2="308" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B7EA6"/>
+      <stop offset="0.55" stop-color="#62D4E5"/>
+      <stop offset="1" stop-color="#A5F3FF"/>
+    </linearGradient>
+    <linearGradient id="bandC" x1="68" y1="284" x2="344" y2="342" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#66D8E9"/>
+      <stop offset="1" stop-color="#2C8EB7"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="40" y1="126" x2="382" y2="296" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#73E2F6"/>
+      <stop offset="1" stop-color="#0E4A78"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M71 160C123 99 191 66 259 70C311 73 355 96 377 128L342 136C325 113 292 98 250 95C196 92 143 115 101 156L71 160Z" fill="url(#bandA)"/>
+
+  <path d="M95 189L303 119L374 161L165 231L95 189Z" fill="url(#bandB)"/>
+
+  <path d="M162 230L374 160L358 274L197 335L162 230Z" fill="url(#bandA)" opacity="0.82"/>
+
+  <path d="M86 287C127 337 185 358 249 355C297 352 338 333 365 303L335 294C314 315 283 329 246 331C198 333 153 318 120 286L86 287Z" fill="url(#bandC)"/>
+
+  <path d="M177 336L365 271L300 355L177 336Z" fill="url(#bandB)"/>
+
+  <path d="M47 246C35 280 46 314 74 333C97 348 130 347 157 334L144 315C124 326 102 328 87 319C67 307 59 282 69 255L47 246Z" fill="url(#orbit)"/>
+
+  <path d="M359 84C382 103 391 134 383 161C375 188 353 209 325 218L319 197C340 190 356 176 362 157C368 141 362 123 347 110L359 84Z" fill="url(#orbit)"/>
+</svg>
