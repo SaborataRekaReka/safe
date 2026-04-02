@@ -1,14 +1,14 @@
 const DEFAULT_SITE_CONFIG = {
   seamenMenuLinks: [
-    { href: 'seamen.html', label: 'Услуги для моряков' },
-    { href: 'shipmoney.html', label: 'Вывод средств с Shipmoney' },
-    { href: 'kadmos.html', label: 'Вывод средств с Kadmos' },
-    { href: 'company.html', label: 'Вывод средств от компании' }
+    { href: '/seamen', label: 'Услуги для моряков' },
+    { href: '/shipmoney', label: 'Вывод средств с Shipmoney' },
+    { href: '/kadmos', label: 'Вывод средств с Kadmos' },
+    { href: '/company', label: 'Вывод средств от компании' }
   ],
   footerLinks: [
-    { href: 'shipmoney.html', label: 'Вывод с Shipmoney' },
-    { href: 'kadmos.html', label: 'Вывод с Kadmos' },
-    { href: 'company.html', label: 'Вывод с компании' }
+    { href: '/shipmoney', label: 'Вывод с Shipmoney' },
+    { href: '/kadmos', label: 'Вывод с Kadmos' },
+    { href: '/company', label: 'Вывод с компании' }
   ],
   contactModal: {
     title: 'Актуальные способы связи',
@@ -20,6 +20,43 @@ const DEFAULT_SITE_CONFIG = {
 };
 
 const SITE_CONFIG = window.SAFE_SITE_CONFIG || DEFAULT_SITE_CONFIG;
+
+const normalizeRoutePath = (value = '') => {
+  if (!value) {
+    return '/';
+  }
+
+  const parsedUrl = new URL(String(value), window.location.origin);
+  let pathname = parsedUrl.pathname || '/';
+  pathname = pathname.replace(/index\.html$/i, '');
+  pathname = pathname.replace(/\.html$/i, '');
+
+  if (!pathname.startsWith('/')) {
+    pathname = `/${pathname}`;
+  }
+
+  if (pathname.length > 1) {
+    pathname = pathname.replace(/\/+$/, '');
+  }
+
+  return pathname || '/';
+};
+
+const toCleanPath = (value = '') => normalizeRoutePath(value);
+
+const redirectLegacyHtmlPath = () => {
+  const pathname = window.location.pathname || '/';
+  const isLegacyHtml = /\.html$/i.test(pathname);
+  if (!isLegacyHtml) {
+    return;
+  }
+
+  const targetPath = normalizeRoutePath(pathname);
+  const targetUrl = `${targetPath}${window.location.search || ''}${window.location.hash || ''}`;
+  window.location.replace(targetUrl);
+};
+
+redirectLegacyHtmlPath();
 
 const isMarTrustLink = (href = '') => {
   if (!href) {
@@ -39,43 +76,69 @@ const isMarTrustLink = (href = '') => {
 const SEAMEN_MENU_LINKS = SITE_CONFIG.seamenMenuLinks.filter((item) => !isMarTrustLink(item.href));
 const FOOTER_LINKS = SITE_CONFIG.footerLinks.filter((item) => !isMarTrustLink(item.href));
 
-const CURRENT_PAGE = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-const SEAMEN_PAGES = new Set(SEAMEN_MENU_LINKS.map((item) => item.href));
+const CURRENT_PATH = normalizeRoutePath(window.location.pathname);
+const SEAMEN_PAGES = new Set(SEAMEN_MENU_LINKS.map((item) => normalizeRoutePath(item.href)));
 
 const renderSeamenSubmenu = () => {
   document.querySelectorAll('.main-nav__submenu').forEach((submenu) => {
     submenu.removeAttribute('role');
     submenu.innerHTML = SEAMEN_MENU_LINKS
       .map((item) => {
-        const activeClass = item.href === CURRENT_PAGE ? ' main-nav__submenu-link--active' : '';
-        return `<a class="main-nav__submenu-link${activeClass}" href="${item.href}">${item.label}</a>`;
+        const itemPath = normalizeRoutePath(item.href);
+        const activeClass = itemPath === CURRENT_PATH ? ' main-nav__submenu-link--active' : '';
+        return `<a class="main-nav__submenu-link${activeClass}" href="${toCleanPath(item.href)}">${item.label}</a>`;
       })
       .join('');
   });
 
   document.querySelectorAll('.main-nav__toggle').forEach((toggleButton) => {
-    toggleButton.classList.toggle('main-nav__link--active', SEAMEN_PAGES.has(CURRENT_PAGE));
+    toggleButton.classList.toggle('main-nav__link--active', SEAMEN_PAGES.has(CURRENT_PATH));
   });
 };
 
 const syncMainNavActiveLink = () => {
   document.querySelectorAll('.main-nav > a.main-nav__link').forEach((link) => {
-    const href = (link.getAttribute('href') || '').toLowerCase();
-    const isPageLink = href.endsWith('.html');
-    const isActive = isPageLink && href === CURRENT_PAGE;
+    const href = link.getAttribute('href') || '';
+    const normalizedHref = normalizeRoutePath(href);
+    const isPageLink = !href.startsWith('#') && !href.startsWith('mailto:') && !href.startsWith('tel:');
+    const isActive = isPageLink && normalizedHref === CURRENT_PATH;
     link.classList.toggle('main-nav__link--active', isActive);
   });
 };
 
 const renderFooter = () => {
   document.querySelectorAll('.site-footer__brand').forEach((brandLink) => {
-    brandLink.setAttribute('href', 'index.html');
+    brandLink.setAttribute('href', '/');
   });
 
   document.querySelectorAll('.site-footer__menu ul').forEach((list) => {
     list.innerHTML = FOOTER_LINKS
-      .map((item) => `<li><a href="${item.href}">${item.label}</a></li>`)
+      .map((item) => `<li><a href="${toCleanPath(item.href)}">${item.label}</a></li>`)
       .join('');
+  });
+};
+
+const rewriteInternalHtmlLinks = () => {
+  document.querySelectorAll('a[href]').forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      return;
+    }
+
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(href, window.location.origin);
+    } catch {
+      return;
+    }
+
+    if (parsedUrl.origin !== window.location.origin) {
+      return;
+    }
+
+    const cleanPath = normalizeRoutePath(parsedUrl.pathname);
+    const cleanHref = `${cleanPath}${parsedUrl.search || ''}${parsedUrl.hash || ''}`;
+    link.setAttribute('href', cleanHref);
   });
 };
 
@@ -258,6 +321,7 @@ renderSeamenSubmenu();
 syncMainNavActiveLink();
 renderFooter();
 sanitizeMarTrustLinksInMenu();
+rewriteInternalHtmlLinks();
 normalizeContactTriggers();
 
 const navState = initNavigation();

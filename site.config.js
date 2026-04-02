@@ -1,14 +1,14 @@
 window.SAFE_SITE_CONFIG = {
   seamenMenuLinks: [
-    { href: "seamen.html", label: "Услуги для моряков" },
-    { href: "shipmoney.html", label: "Вывод средств с Shipmoney" },
-    { href: "kadmos.html", label: "Вывод средств с Kadmos" },
-    { href: "company.html", label: "Вывод средств от компании" }
+    { href: "/seamen", label: "Услуги для моряков" },
+    { href: "/shipmoney", label: "Вывод средств с Shipmoney" },
+    { href: "/kadmos", label: "Вывод средств с Kadmos" },
+    { href: "/company", label: "Вывод средств от компании" }
   ],
   footerLinks: [
-    { href: "shipmoney.html", label: "Вывод с Shipmoney" },
-    { href: "kadmos.html", label: "Вывод с Kadmos" },
-    { href: "company.html", label: "Вывод с компании" }
+    { href: "/shipmoney", label: "Вывод с Shipmoney" },
+    { href: "/kadmos", label: "Вывод с Kadmos" },
+    { href: "/company", label: "Вывод с компании" }
   ],
   contactModal: {
     title: "Актуальные способы связи",
