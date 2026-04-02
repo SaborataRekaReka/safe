@@ -21,13 +21,31 @@ const DEFAULT_SITE_CONFIG = {
 
 const SITE_CONFIG = window.SAFE_SITE_CONFIG || DEFAULT_SITE_CONFIG;
 
+const isMarTrustLink = (href = '') => {
+  if (!href) {
+    return false;
+  }
+
+  try {
+    const resolvedUrl = new URL(href, window.location.origin);
+    const pathname = resolvedUrl.pathname.toLowerCase();
+    return pathname.endsWith('/martrust.html') || pathname.endsWith('/martrust');
+  } catch {
+    const normalizedHref = String(href).toLowerCase();
+    return normalizedHref.includes('martrust.html') || /\/martrust(?:$|[?#/])/.test(normalizedHref);
+  }
+};
+
+const SEAMEN_MENU_LINKS = SITE_CONFIG.seamenMenuLinks.filter((item) => !isMarTrustLink(item.href));
+const FOOTER_LINKS = SITE_CONFIG.footerLinks.filter((item) => !isMarTrustLink(item.href));
+
 const CURRENT_PAGE = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-const SEAMEN_PAGES = new Set(SITE_CONFIG.seamenMenuLinks.map((item) => item.href));
+const SEAMEN_PAGES = new Set(SEAMEN_MENU_LINKS.map((item) => item.href));
 
 const renderSeamenSubmenu = () => {
   document.querySelectorAll('.main-nav__submenu').forEach((submenu) => {
     submenu.removeAttribute('role');
-    submenu.innerHTML = SITE_CONFIG.seamenMenuLinks
+    submenu.innerHTML = SEAMEN_MENU_LINKS
       .map((item) => {
         const activeClass = item.href === CURRENT_PAGE ? ' main-nav__submenu-link--active' : '';
         return `<a class="main-nav__submenu-link${activeClass}" href="${item.href}">${item.label}</a>`;
@@ -55,9 +73,25 @@ const renderFooter = () => {
   });
 
   document.querySelectorAll('.site-footer__menu ul').forEach((list) => {
-    list.innerHTML = SITE_CONFIG.footerLinks
+    list.innerHTML = FOOTER_LINKS
       .map((item) => `<li><a href="${item.href}">${item.label}</a></li>`)
       .join('');
+  });
+};
+
+const sanitizeMarTrustLinksInMenu = () => {
+  document.querySelectorAll('.main-nav__submenu a, .site-footer__menu a').forEach((link) => {
+    if (!isMarTrustLink(link.getAttribute('href') || '')) {
+      return;
+    }
+
+    const listItem = link.closest('li');
+    if (listItem) {
+      listItem.remove();
+      return;
+    }
+
+    link.remove();
   });
 };
 
@@ -223,6 +257,7 @@ const initContactModal = () => {
 renderSeamenSubmenu();
 syncMainNavActiveLink();
 renderFooter();
+sanitizeMarTrustLinksInMenu();
 normalizeContactTriggers();
 
 const navState = initNavigation();
