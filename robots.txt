@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /martrust
+Disallow: /martrust.html
+
+Sitemap: https://exchangemoneyt.com/sitemap.xml
