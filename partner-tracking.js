@@ -389,7 +389,10 @@
 
     var links = document.querySelectorAll('[data-go-bot-link]');
     for (var i = 0; i < links.length; i += 1) {
-      links[i].setAttribute('href', botLink);
+      var currentHref = links[i].getAttribute('href') || '';
+      if (currentHref !== botLink) {
+        links[i].setAttribute('href', botLink);
+      }
     }
 
     var partnerValueNodes = document.querySelectorAll('[data-go-bot-partner-value]');
