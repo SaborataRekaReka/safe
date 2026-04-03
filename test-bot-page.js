@@ -250,8 +250,8 @@
       '  <button class="contact-modal__close" type="button" aria-label="Закрыть" data-bot-redirect-close>' +
       '    <span aria-hidden="true">&times;</span>' +
       '  </button>' +
-      '  <h2 class="contact-modal__title" id="bot-redirect-title">Переход в Telegram-бота</h2>' +
-      '  <div class="contact-modal__content">' +
+      '  <h2 class="contact-modal__title" id="bot-redirect-title" style="max-width:100%;margin:0 auto;text-align:center;">Переход в Telegram-бота</h2>' +
+      '  <div class="contact-modal__content" style="display:grid;row-gap:14px;text-align:center;justify-items:center;">' +
       '    <div class="bot-redirect-timer" data-bot-redirect-timer style="position:relative;width:146px;height:146px;margin:4px auto 8px;display:grid;place-items:center;">' +
       '      <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true" style="width:146px;height:146px;transform:rotate(-90deg);">' +
       '        <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.24)" stroke-width="7"></circle>' +
