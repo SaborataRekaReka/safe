@@ -252,12 +252,12 @@
       '  </button>' +
       '  <h2 class="contact-modal__title" id="bot-redirect-title">Переход в Telegram-бота</h2>' +
       '  <div class="contact-modal__content">' +
-      '    <div class="bot-redirect-timer" data-bot-redirect-timer>' +
-      '      <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true">' +
-      '        <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50"></circle>' +
-      '        <circle class="bot-redirect-timer__progress" cx="60" cy="60" r="50" data-bot-redirect-ring></circle>' +
+      '    <div class="bot-redirect-timer" data-bot-redirect-timer style="position:relative;width:146px;height:146px;margin:4px auto 8px;display:grid;place-items:center;">' +
+      '      <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true" style="width:146px;height:146px;transform:rotate(-90deg);">' +
+      '        <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.24)" stroke-width="7"></circle>' +
+      '        <circle class="bot-redirect-timer__progress" cx="60" cy="60" r="50" fill="none" stroke="#61c0be" stroke-width="7" stroke-linecap="round" data-bot-redirect-ring></circle>' +
       '      </svg>' +
-      '      <div class="bot-redirect-timer__value" data-bot-redirect-seconds>5</div>' +
+      '      <div class="bot-redirect-timer__value" data-bot-redirect-seconds style="position:absolute;inset:0;display:grid;place-items:center;font-size:44px;font-weight:700;line-height:1;color:#fff;text-shadow:0 6px 24px rgba(0,5,33,.7);">5</div>' +
       '    </div>' +
       '    <p data-bot-redirect-countdown></p>' +
       '    <p>Если переход не сработает автоматически, используйте кнопку ниже.</p>' +
