@@ -41,6 +41,60 @@
     return OPERATOR_USERNAMES.indexOf(username) >= 0;
   }
 
+  function isContactFormHref(rawHref) {
+    if (!rawHref) {
+      return false;
+    }
+
+    if (rawHref === '#contactform') {
+      return true;
+    }
+
+    try {
+      var parsedUrl = new URL(rawHref, window.location.origin);
+      return parsedUrl.origin === window.location.origin && parsedUrl.hash === '#contactform';
+    } catch (_error) {
+      return false;
+    }
+  }
+
+  function isContactActionText(textValue) {
+    if (!textValue) {
+      return false;
+    }
+
+    var normalized = String(textValue).trim().toLowerCase();
+    if (!normalized) {
+      return false;
+    }
+
+    return (
+      normalized.indexOf('написать оператору') >= 0 ||
+      normalized.indexOf('связаться с оператором') >= 0 ||
+      normalized.indexOf('связаться с нами') >= 0
+    );
+  }
+
+  function shouldForceBotLink(link, rawHref) {
+    if (!link) {
+      return false;
+    }
+
+    if (isOperatorChatHref(rawHref)) {
+      return true;
+    }
+
+    if (link.hasAttribute('data-open-contact-modal') || isContactFormHref(rawHref)) {
+      return true;
+    }
+
+    if (isContactActionText(link.textContent || '')) {
+      return true;
+    }
+
+    return false;
+  }
+
   function resolveBotLink() {
     var tracker = window.SafePartnerTracking;
     if (!tracker) {
@@ -69,12 +123,16 @@
     for (var i = 0; i < links.length; i += 1) {
       var link = links[i];
       var href = link.getAttribute('href') || '';
-      if (!isOperatorChatHref(href)) {
+      if (!shouldForceBotLink(link, href)) {
         continue;
       }
 
       if (link.getAttribute('href') !== botLink) {
         link.setAttribute('href', botLink);
+      }
+
+      if (link.hasAttribute('data-open-contact-modal')) {
+        link.removeAttribute('data-open-contact-modal');
       }
 
       link.setAttribute('data-bot-redirect-trigger', 'true');
@@ -198,15 +256,21 @@
       return;
     }
 
+    var linkHref = link.getAttribute('href') || '';
     var shouldHandle =
       link.getAttribute('data-bot-redirect-trigger') === 'true' ||
-      isOperatorChatHref(link.getAttribute('href') || '');
+      shouldForceBotLink(link, linkHref);
 
     if (!shouldHandle) {
       return;
     }
 
     event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') {
+      event.stopImmediatePropagation();
+    }
+
     updateOperatorLinks(document);
     openModal(resolveBotLink());
   }
@@ -244,7 +308,7 @@
   function init() {
     updateOperatorLinks(document);
     createModal();
-    document.addEventListener('click', onDocumentClick);
+    document.addEventListener('click', onDocumentClick, true);
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
         closeModal();
