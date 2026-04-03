@@ -9,6 +9,7 @@
     modal: null,
     countdownNode: null,
     timerId: null,
+    redirectTimeoutId: null,
     redirectUrl: FALLBACK_BOT_LINK,
     secondsLeft: 3
   };
@@ -142,11 +143,16 @@
 
   function clearCountdownTimer() {
     if (!state.timerId) {
-      return;
+      // no-op
+    } else {
+      window.clearInterval(state.timerId);
+      state.timerId = null;
     }
 
-    window.clearInterval(state.timerId);
-    state.timerId = null;
+    if (state.redirectTimeoutId) {
+      window.clearTimeout(state.redirectTimeoutId);
+      state.redirectTimeoutId = null;
+    }
   }
 
   function closeModal() {
@@ -177,12 +183,16 @@
     state.secondsLeft = 3;
     applyCountdownText();
 
+    state.redirectTimeoutId = window.setTimeout(function () {
+      clearCountdownTimer();
+      window.location.assign(state.redirectUrl);
+    }, 3000);
+
     state.timerId = window.setInterval(function () {
       state.secondsLeft -= 1;
 
       if (state.secondsLeft <= 0) {
         clearCountdownTimer();
-        window.location.assign(state.redirectUrl);
         return;
       }
 
