@@ -1423,6 +1423,82 @@ body {
   display: block;
 }
 
+.page--go-bot {
+  background:
+    radial-gradient(circle at 65% 20%, rgba(53, 155, 193, 0.26), rgba(0, 5, 33, 0) 44%),
+    linear-gradient(90deg, #000521 0%, #001954 44%, #00184e 56%, #000521 100%);
+}
+
+.go-bot {
+  padding: 78px 0 96px;
+  background-image: var(--gradient-section-deep);
+}
+
+.go-bot__container {
+  max-width: 820px;
+  text-align: center;
+}
+
+.go-bot__title {
+  margin: 0;
+  color: #fff;
+  font-size: 46px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.go-bot__lead {
+  margin: 20px auto 0;
+  max-width: 720px;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.go-bot__status {
+  margin: 28px auto 0;
+  max-width: 720px;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.go-bot__partner-row {
+  margin: 18px 0 0;
+  color: #fff;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.go-bot__partner-code {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.go-bot__actions {
+  margin-top: 34px;
+  display: flex;
+  justify-content: center;
+}
+
+.go-bot__cta {
+  min-width: 290px;
+}
+
+.go-bot__manual {
+  margin: 16px auto 0;
+  max-width: 680px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
 @media (max-width: 1200px) {
   .menu-toggle {
     display: inline-block;
@@ -1763,6 +1839,18 @@ body {
 
   .site-footer__link {
     font-size: 14px;
+  }
+
+  .go-bot {
+    padding: 64px 0 80px;
+  }
+
+  .go-bot__title {
+    font-size: 40px;
+  }
+
+  .go-bot__lead {
+    font-size: 19px;
   }
 }
 
@@ -2201,6 +2289,48 @@ body {
     margin-left: 0;
     width: 100%;
     justify-content: center;
+  }
+
+  .go-bot {
+    padding: 56px 0 64px;
+  }
+
+  .go-bot__title {
+    font-size: 34px;
+  }
+
+  .go-bot__lead {
+    margin-top: 16px;
+    font-size: 17px;
+  }
+
+  .go-bot__status {
+    margin-top: 24px;
+    font-size: 16px;
+  }
+
+  .go-bot__partner-row {
+    font-size: 15px;
+  }
+
+  .go-bot__partner-code {
+    margin-left: 0;
+    margin-top: 8px;
+    display: inline-flex;
+  }
+
+  .go-bot__actions {
+    margin-top: 28px;
+  }
+
+  .go-bot__cta {
+    width: 100%;
+    max-width: 340px;
+    min-width: 0;
+  }
+
+  .go-bot__manual {
+    font-size: 14px;
   }
 
   /* Global mobile centering across all pages */
