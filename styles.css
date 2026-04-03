@@ -1353,6 +1353,21 @@ body {
   width: min(560px, 100%);
 }
 
+.bot-redirect-modal .contact-modal__title {
+  max-width: 100%;
+  text-align: center;
+}
+
+.bot-redirect-modal .contact-modal__content {
+  text-align: center;
+  justify-items: center;
+}
+
+.bot-redirect-modal .contact-modal__content p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .bot-redirect-timer {
   width: 146px;
   height: 146px;
