@@ -397,15 +397,23 @@
 
     var partnerValueNodes = document.querySelectorAll('[data-go-bot-partner-value]');
     for (var j = 0; j < partnerValueNodes.length; j += 1) {
-      partnerValueNodes[j].textContent = safeCode || 'не указан';
+      var partnerValueText = safeCode || 'не указан';
+      if (partnerValueNodes[j].textContent !== partnerValueText) {
+        partnerValueNodes[j].textContent = partnerValueText;
+      }
     }
 
     var statusNode = document.querySelector('[data-go-bot-status]');
     if (statusNode) {
+      var statusText = '';
       if (safeCode) {
-        statusNode.textContent = 'Партнерский код найден. Можно перейти в Telegram прямо сейчас.';
+        statusText = 'Партнерский код найден. Можно перейти в Telegram прямо сейчас.';
       } else {
-        statusNode.textContent = 'Партнерский код не найден. Будет использована базовая ссылка на бота.';
+        statusText = 'Партнерский код не найден. Будет использована базовая ссылка на бота.';
+      }
+
+      if (statusNode.textContent !== statusText) {
+        statusNode.textContent = statusText;
       }
     }
 
@@ -416,7 +424,10 @@
     initState.goBotRedirectScheduled = true;
 
     if (statusNode) {
-      statusNode.textContent = 'Партнерский код найден. Автопереход в Telegram...';
+      var redirectStatusText = 'Партнерский код найден. Автопереход в Telegram...';
+      if (statusNode.textContent !== redirectStatusText) {
+        statusNode.textContent = redirectStatusText;
+      }
     }
 
     var redirectDelay = config.AUTO_REDIRECT_DELAY_MS;
@@ -508,6 +519,22 @@
     initState.mutationObserver = new MutationObserver(function (mutations) {
       var shouldDecorate = false;
 
+      function nodeContainsAnchor(node) {
+        if (!node || node.nodeType !== 1) {
+          return false;
+        }
+
+        if (node.tagName === 'A' && node.hasAttribute('href')) {
+          return true;
+        }
+
+        if (typeof node.querySelector === 'function' && node.querySelector('a[href]')) {
+          return true;
+        }
+
+        return false;
+      }
+
       for (var i = 0; i < mutations.length; i += 1) {
         var mutation = mutations[i];
 
@@ -517,8 +544,16 @@
         }
 
         if (mutation.type === 'childList' && mutation.addedNodes && mutation.addedNodes.length > 0) {
-          shouldDecorate = true;
-          break;
+          for (var n = 0; n < mutation.addedNodes.length; n += 1) {
+            if (nodeContainsAnchor(mutation.addedNodes[n])) {
+              shouldDecorate = true;
+              break;
+            }
+          }
+
+          if (shouldDecorate) {
+            break;
+          }
         }
       }
 
