@@ -2,16 +2,22 @@
   'use strict';
 
   var OPERATOR_USERNAMES = ['danil_berdykin'];
+  var REDIRECT_DELAY_SECONDS = 5;
+  var REDIRECT_DELAY_MS = REDIRECT_DELAY_SECONDS * 1000;
+  var TIMER_RING_LENGTH = 314.1592653589793;
   var FALLBACK_BOT_LINK =
     'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds';
 
   var state = {
     modal: null,
+    timerNode: null,
+    timerValueNode: null,
+    timerProgressNode: null,
     countdownNode: null,
     timerId: null,
     redirectTimeoutId: null,
     redirectUrl: FALLBACK_BOT_LINK,
-    secondsLeft: 3
+    secondsLeft: REDIRECT_DELAY_SECONDS
   };
 
   function normalizeTelegramUsername(pathname) {
@@ -155,6 +161,26 @@
     }
   }
 
+  function renderTimerProgress(remainingMs) {
+    if (!state.timerProgressNode || !state.timerValueNode) {
+      return;
+    }
+
+    var safeRemaining = Math.max(0, Math.min(REDIRECT_DELAY_MS, remainingMs));
+    var progress = 1 - safeRemaining / REDIRECT_DELAY_MS;
+    var dashOffset = TIMER_RING_LENGTH * progress;
+
+    state.timerProgressNode.style.strokeDasharray = String(TIMER_RING_LENGTH);
+    state.timerProgressNode.style.strokeDashoffset = String(dashOffset);
+
+    var secondsValue = Math.max(0, Math.ceil(safeRemaining / 1000));
+    if (secondsValue !== state.secondsLeft) {
+      state.secondsLeft = secondsValue;
+    }
+
+    state.timerValueNode.textContent = String(state.secondsLeft);
+  }
+
   function closeModal() {
     if (!state.modal) {
       return;
@@ -180,30 +206,39 @@
   function startCountdown() {
     clearCountdownTimer();
 
-    state.secondsLeft = 3;
+    state.secondsLeft = REDIRECT_DELAY_SECONDS;
+    renderTimerProgress(REDIRECT_DELAY_MS);
     applyCountdownText();
+
+    var deadline = Date.now() + REDIRECT_DELAY_MS;
+
+    if (state.timerNode) {
+      state.timerNode.classList.remove('is-running');
+      void state.timerNode.offsetWidth;
+      state.timerNode.classList.add('is-running');
+    }
 
     state.redirectTimeoutId = window.setTimeout(function () {
       clearCountdownTimer();
       window.location.assign(state.redirectUrl);
-    }, 3000);
+    }, REDIRECT_DELAY_MS);
 
     state.timerId = window.setInterval(function () {
-      state.secondsLeft -= 1;
+      var remainingMs = Math.max(0, deadline - Date.now());
+      renderTimerProgress(remainingMs);
+      applyCountdownText();
 
-      if (state.secondsLeft <= 0) {
+      if (remainingMs <= 0) {
         clearCountdownTimer();
         return;
       }
-
-      applyCountdownText();
-    }, 1000);
+    }, 100);
   }
 
   function createModal() {
     var modal = document.createElement('div');
     modal.id = 'bot-redirect-modal';
-    modal.className = 'contact-modal';
+    modal.className = 'contact-modal bot-redirect-modal';
     modal.setAttribute('aria-hidden', 'true');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
@@ -217,15 +252,25 @@
       '  </button>' +
       '  <h2 class="contact-modal__title" id="bot-redirect-title">Переход в Telegram-бота</h2>' +
       '  <div class="contact-modal__content">' +
+      '    <div class="bot-redirect-timer" data-bot-redirect-timer>' +
+      '      <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true">' +
+      '        <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50"></circle>' +
+      '        <circle class="bot-redirect-timer__progress" cx="60" cy="60" r="50" data-bot-redirect-ring></circle>' +
+      '      </svg>' +
+      '      <div class="bot-redirect-timer__value" data-bot-redirect-seconds>5</div>' +
+      '    </div>' +
       '    <p data-bot-redirect-countdown></p>' +
       '    <p>Если переход не сработает автоматически, используйте кнопку ниже.</p>' +
-      '    <p><a href="#" data-bot-redirect-now>Перейти в Telegram сейчас</a></p>' +
+      '    <p><a class="bot-redirect-now-link" href="#" data-bot-redirect-now>Перейти в Telegram сейчас</a></p>' +
       '  </div>' +
       '</div>';
 
     document.body.appendChild(modal);
 
     state.modal = modal;
+    state.timerNode = modal.querySelector('[data-bot-redirect-timer]');
+    state.timerValueNode = modal.querySelector('[data-bot-redirect-seconds]');
+    state.timerProgressNode = modal.querySelector('[data-bot-redirect-ring]');
     state.countdownNode = modal.querySelector('[data-bot-redirect-countdown]');
 
     var closeButtons = modal.querySelectorAll('[data-bot-redirect-close]');
