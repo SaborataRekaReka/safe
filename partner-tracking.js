@@ -9,7 +9,7 @@
   'use strict';
 
   var DEFAULT_CONFIG = {
-    PARTNER_QUERY_KEYS: ['partner_code', 'a_aid'],
+    PARTNER_QUERY_KEYS: ['partner_code', 'a_aid', 'ref_id'],
     STORAGE_KEY: 'partner_code',
     COOKIE_KEY: 'partner_code',
     COOKIE_MAX_AGE_DAYS: 30,
@@ -33,6 +33,26 @@
   function getConfig() {
     var runtimeConfig = isObject(global.SAFE_PARTNER_CONFIG) ? global.SAFE_PARTNER_CONFIG : {};
     return Object.assign({}, DEFAULT_CONFIG, runtimeConfig);
+  }
+
+  function getPartnerQueryKeys(config) {
+    var sourceKeys = Array.isArray(config.PARTNER_QUERY_KEYS) ? config.PARTNER_QUERY_KEYS : DEFAULT_CONFIG.PARTNER_QUERY_KEYS;
+    var normalizedKeys = [];
+
+    for (var index = 0; index < sourceKeys.length; index += 1) {
+      var candidateKey = typeof sourceKeys[index] === 'string' ? sourceKeys[index].trim() : '';
+      if (!candidateKey || normalizedKeys.indexOf(candidateKey) !== -1) {
+        continue;
+      }
+
+      normalizedKeys.push(candidateKey);
+    }
+
+    if (normalizedKeys.length > 0) {
+      return normalizedKeys;
+    }
+
+    return DEFAULT_CONFIG.PARTNER_QUERY_KEYS.slice();
   }
 
   function isObject(value) {
@@ -90,17 +110,12 @@
     var params = getUrlSearchParams(searchValue);
     var maxLength = config.MAX_PARTNER_CODE_LENGTH;
 
-    var partnerCodeKey = config.PARTNER_QUERY_KEYS[0] || 'partner_code';
-    var aidKey = config.PARTNER_QUERY_KEYS[1] || 'a_aid';
-
-    var directPartnerCode = sanitizePartnerCode(params.get(partnerCodeKey), maxLength);
-    if (directPartnerCode) {
-      return directPartnerCode;
-    }
-
-    var aidPartnerCode = sanitizePartnerCode(params.get(aidKey), maxLength);
-    if (aidPartnerCode) {
-      return aidPartnerCode;
+    var queryKeys = getPartnerQueryKeys(config);
+    for (var index = 0; index < queryKeys.length; index += 1) {
+      var candidateValue = sanitizePartnerCode(params.get(queryKeys[index]), maxLength);
+      if (candidateValue) {
+        return candidateValue;
+      }
     }
 
     return null;
@@ -370,16 +385,52 @@
     return appendPartnerCodeToBotHelpUrl(config.DEFAULT_BOTHELP_LINK, safeCode);
   }
 
-  function isGoBotPage() {
+  function getGoBotPageElement() {
     if (!hasWindow()) {
+      return null;
+    }
+
+    return document.querySelector('[data-go-bot-page]');
+  }
+
+  function isGoBotPage() {
+    return !!getGoBotPageElement();
+  }
+
+  function getGoBotAttribute(pageElement, attributeName, fallbackValue) {
+    if (!pageElement || !pageElement.hasAttribute(attributeName)) {
+      return fallbackValue;
+    }
+
+    var attributeValue = pageElement.getAttribute(attributeName);
+    if (attributeValue === null || attributeValue === '') {
+      return fallbackValue;
+    }
+
+    return attributeValue;
+  }
+
+  function hasGoBotFlag(pageElement, attributeName) {
+    if (!pageElement || !pageElement.hasAttribute(attributeName)) {
       return false;
     }
 
-    return !!document.querySelector('[data-go-bot-page]');
+    var attributeValue = pageElement.getAttribute(attributeName);
+    return attributeValue === '' || attributeValue === '1' || attributeValue === 'true' || attributeValue === 'yes';
+  }
+
+  function normalizeRedirectDelay(rawDelay, fallbackDelay) {
+    var numericDelay = Number(rawDelay);
+    if (!Number.isFinite(numericDelay) || numericDelay < 300 || numericDelay > 10000) {
+      return fallbackDelay;
+    }
+
+    return numericDelay;
   }
 
   function syncGoBotPage(partnerCode) {
-    if (!isGoBotPage()) {
+    var pageElement = getGoBotPageElement();
+    if (!pageElement) {
       return;
     }
 
@@ -387,7 +438,7 @@
     var safeCode = sanitizePartnerCode(partnerCode, config.MAX_PARTNER_CODE_LENGTH);
     var botLink = buildBotHelpLink(safeCode);
 
-    var links = document.querySelectorAll('[data-go-bot-link]');
+    var links = pageElement.querySelectorAll('[data-go-bot-link]');
     for (var i = 0; i < links.length; i += 1) {
       var currentHref = links[i].getAttribute('href') || '';
       if (currentHref !== botLink) {
@@ -395,7 +446,7 @@
       }
     }
 
-    var partnerValueNodes = document.querySelectorAll('[data-go-bot-partner-value]');
+    var partnerValueNodes = pageElement.querySelectorAll('[data-go-bot-partner-value]');
     for (var j = 0; j < partnerValueNodes.length; j += 1) {
       var partnerValueText = safeCode || 'не указан';
       if (partnerValueNodes[j].textContent !== partnerValueText) {
@@ -403,13 +454,21 @@
       }
     }
 
-    var statusNode = document.querySelector('[data-go-bot-status]');
+    var statusNode = pageElement.querySelector('[data-go-bot-status]');
     if (statusNode) {
       var statusText = '';
       if (safeCode) {
-        statusText = 'Партнерский код найден. Можно перейти в Telegram прямо сейчас.';
+        statusText = getGoBotAttribute(
+          pageElement,
+          'data-go-bot-ready-text',
+          'Партнерский код найден. Можно перейти в Telegram прямо сейчас.'
+        );
       } else {
-        statusText = 'Партнерский код не найден. Будет использована базовая ссылка на бота.';
+        statusText = getGoBotAttribute(
+          pageElement,
+          'data-go-bot-missing-text',
+          'Партнерский код не найден. Будет использована базовая ссылка на бота.'
+        );
       }
 
       if (statusNode.textContent !== statusText) {
@@ -417,23 +476,29 @@
       }
     }
 
-    if (!config.AUTO_REDIRECT_TO_BOT || !safeCode || initState.goBotRedirectScheduled) {
+    var forceRedirect = hasGoBotFlag(pageElement, 'data-go-bot-force-redirect');
+    if (!config.AUTO_REDIRECT_TO_BOT || (!safeCode && !forceRedirect) || initState.goBotRedirectScheduled) {
       return;
     }
 
     initState.goBotRedirectScheduled = true;
 
     if (statusNode) {
-      var redirectStatusText = 'Партнерский код найден. Автопереход в Telegram...';
+      var redirectStatusText = getGoBotAttribute(
+        pageElement,
+        'data-go-bot-redirect-text',
+        'Партнерский код найден. Автопереход в Telegram...'
+      );
       if (statusNode.textContent !== redirectStatusText) {
         statusNode.textContent = redirectStatusText;
       }
     }
 
-    var redirectDelay = config.AUTO_REDIRECT_DELAY_MS;
-    if (!Number.isFinite(redirectDelay) || redirectDelay < 300 || redirectDelay > 700) {
-      redirectDelay = 500;
-    }
+    var defaultRedirectDelay = normalizeRedirectDelay(config.AUTO_REDIRECT_DELAY_MS, 500);
+    var redirectDelay = normalizeRedirectDelay(
+      getGoBotAttribute(pageElement, 'data-go-bot-redirect-delay-ms', defaultRedirectDelay),
+      defaultRedirectDelay
+    );
 
     window.setTimeout(function () {
       window.location.assign(botLink);

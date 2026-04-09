@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /martrust
 Disallow: /martrust.html
+Disallow: /partner_link
+Disallow: /partner_link.html
 Disallow: /test-bot
 Disallow: /test-bot.html
 

@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Переход в Telegram | SAFE</title>
-    <meta name="description" content="Переход в Telegram-бот SAFE" />
-    <meta name="robots" content="noindex, nofollow" />
-    <meta property="og:title" content="Переход в Telegram | SAFE" />
-    <meta property="og:description" content="Переход в Telegram-бот SAFE" />
+    <title>Партнерский переход в Telegram | SAFE</title>
+    <meta name="description" content="Партнерский переход в Telegram-бот SAFE" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta property="og:title" content="Партнерский переход в Telegram | SAFE" />
+    <meta property="og:description" content="Партнерский переход в Telegram-бот SAFE" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://exchangemoneyt.com/go-bot" />
+    <meta property="og:url" content="https://exchangemoneyt.com/partner_link" />
     <meta property="og:site_name" content="SAFE" />
 
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
@@ -55,12 +55,23 @@
     </header>
 
     <main>
-      <section class="go-bot" data-go-bot-page>
+      <section
+        class="go-bot"
+        data-go-bot-page
+        data-go-bot-force-redirect="true"
+        data-go-bot-redirect-delay-ms="3000"
+        data-go-bot-ready-text="Партнерский код сохранен. Через 3 секунды откроем Telegram-бота."
+        data-go-bot-missing-text="Параметр ref_id не найден. Через 3 секунды откроем базовую ссылку на Telegram-бота."
+        data-go-bot-redirect-text="Переходим в Telegram через 3 секунды..."
+      >
         <div class="go-bot__container page-container">
           <h1 class="go-bot__title">Переход в Telegram-бот</h1>
-          <p class="go-bot__lead">Открываем Telegram через BotHelp. Если переход не выполнится автоматически, используйте кнопку ниже.</p>
+          <p class="go-bot__lead">
+            Сохраняем партнерский идентификатор из параметра ref_id и автоматически открываем Telegram. Если переход не выполнится,
+            используйте кнопку ниже.
+          </p>
 
-          <p class="go-bot__status" data-go-bot-status>Проверяем партнерский код...</p>
+          <p class="go-bot__status" data-go-bot-status>Проверяем параметр ref_id...</p>
           <p class="go-bot__partner-row">
             Текущий partner_code:
             <span class="go-bot__partner-code" data-go-bot-partner-value>не указан</span>
@@ -78,7 +89,7 @@
             </a>
           </div>
 
-          <p class="go-bot__manual">Если переход не начался, нажмите кнопку выше: Открыть Telegram вручную.</p>
+          <p class="go-bot__manual">Если переход не начался автоматически, нажмите кнопку выше.</p>
         </div>
       </section>
 

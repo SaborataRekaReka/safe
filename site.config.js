@@ -20,7 +20,7 @@ window.SAFE_SITE_CONFIG = {
 };
 
 window.SAFE_PARTNER_CONFIG = {
-  PARTNER_QUERY_KEYS: ["partner_code", "a_aid"],
+  PARTNER_QUERY_KEYS: ["partner_code", "a_aid", "ref_id"],
   STORAGE_KEY: "partner_code",
   COOKIE_KEY: "partner_code",
   COOKIE_MAX_AGE_DAYS: 30,

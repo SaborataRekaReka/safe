@@ -29,6 +29,11 @@ test('getPartnerCodeFromUrl falls back to a_aid', () => {
   assert.equal(value, 'kseniia');
 });
 
+test('getPartnerCodeFromUrl falls back to ref_id', () => {
+  const value = tracking.getPartnerCodeFromUrl('?ref_id=partner-42');
+  assert.equal(value, 'partner-42');
+});
+
 test('getPartnerCodeFromUrl ignores empty values', () => {
   const value = tracking.getPartnerCodeFromUrl('?partner_code=   &a_aid=');
   assert.equal(value, null);
