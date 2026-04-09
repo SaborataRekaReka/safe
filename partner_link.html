@@ -74,6 +74,7 @@
         'use strict';
 
         var DEFAULT_BOT_LINK = 'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds';
+        var METRIKA_COUNTER_ID = '96288338';
         var STORAGE_KEY = 'partner_code';
         var COOKIE_KEY = 'partner_code';
         var MAX_PARTNER_CODE_LENGTH = 100;
@@ -167,6 +168,44 @@
           );
         }
 
+        function sendMetrikaHit(partnerCode) {
+          var requestUrl = '';
+
+          try {
+            var params = new URLSearchParams();
+            params.set('ut', 'noindex');
+            params.set('rand', String(Date.now()) + String(Math.floor(Math.random() * 10000)));
+            params.set('page-url', window.location.href);
+            params.set('page-ref', document.referrer || '');
+            params.set('page-title', document.title || '');
+
+            if (partnerCode) {
+              params.set('partner_code', partnerCode);
+            }
+
+            requestUrl = 'https://mc.yandex.ru/watch/' + METRIKA_COUNTER_ID + '?' + params.toString();
+
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(requestUrl, '');
+              return;
+            }
+
+            fetch(requestUrl, {
+              mode: 'no-cors',
+              keepalive: true,
+              cache: 'no-store'
+            });
+          } catch (_error) {
+            if (!requestUrl) {
+              return;
+            }
+
+            // Final fallback for older browsers.
+            var beaconImage = new Image();
+            beaconImage.src = requestUrl;
+          }
+        }
+
         var rawDelay = Number(pageRoot.getAttribute('data-go-bot-redirect-delay-ms'));
         var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
 
@@ -196,6 +235,8 @@
 
           writeCookieValue(COOKIE_KEY, resolvedPartnerCode);
         }
+
+        sendMetrikaHit(resolvedPartnerCode);
 
         var baseBotUrl = ctaNode ? ctaNode.getAttribute('href') || DEFAULT_BOT_LINK : DEFAULT_BOT_LINK;
         var redirectUrl = appendPartnerCode(baseBotUrl, resolvedPartnerCode);
@@ -267,5 +308,7 @@
         window.setTimeout(redirectNow, totalMs + 250);
       })();
     </script>
+
+    <noscript><img src="https://mc.yandex.ru/watch/96288338" style="position:absolute; left:-9999px;" alt="" /></noscript>
   </body>
 </html>
