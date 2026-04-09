@@ -69,24 +69,167 @@
       </section>
     </main>
 
-    <script src="site.config.js?v=20260409-1"></script>
-    <script src="partner-tracking.js?v=20260409-1"></script>
     <script>
       (function () {
         'use strict';
+
+        var DEFAULT_BOT_LINK = 'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds';
+        var STORAGE_KEY = 'partner_code';
+        var COOKIE_KEY = 'partner_code';
+        var MAX_PARTNER_CODE_LENGTH = 100;
 
         var pageRoot = document.querySelector('[data-go-bot-page]');
         if (!pageRoot) {
           return;
         }
 
+        function sanitizeCode(value) {
+          if (value === null || value === undefined) {
+            return null;
+          }
+
+          var normalized = String(value).trim();
+          if (!normalized) {
+            return null;
+          }
+
+          if (normalized.length > MAX_PARTNER_CODE_LENGTH) {
+            normalized = normalized.slice(0, MAX_PARTNER_CODE_LENGTH);
+          }
+
+          return normalized;
+        }
+
+        function readCookieValue(key) {
+          var source = document.cookie || '';
+          if (!source) {
+            return null;
+          }
+
+          var parts = source.split(';');
+          for (var i = 0; i < parts.length; i += 1) {
+            var part = parts[i].trim();
+            if (!part) {
+              continue;
+            }
+
+            var separator = part.indexOf('=');
+            if (separator <= 0) {
+              continue;
+            }
+
+            var name = decodeURIComponent(part.slice(0, separator).trim());
+            if (name !== key) {
+              continue;
+            }
+
+            return decodeURIComponent(part.slice(separator + 1));
+          }
+
+          return null;
+        }
+
+        function writeCookieValue(key, value) {
+          var maxAgeSeconds = 30 * 24 * 60 * 60;
+          var cookieString =
+            encodeURIComponent(key) +
+            '=' +
+            encodeURIComponent(value) +
+            '; path=/; max-age=' +
+            maxAgeSeconds +
+            '; SameSite=Lax' +
+            (window.location.protocol === 'https:' ? '; Secure' : '');
+
+          document.cookie = cookieString;
+        }
+
+        function appendPartnerCode(url, partnerCode) {
+          if (!partnerCode) {
+            return url;
+          }
+
+          try {
+            var parsed = new URL(url);
+            parsed.searchParams.set(STORAGE_KEY, partnerCode);
+            return parsed.toString();
+          } catch (_error) {
+            return url;
+          }
+        }
+
+        function resolvePartnerCodeFromUrl() {
+          var params = new URLSearchParams(window.location.search || '');
+
+          return (
+            sanitizeCode(params.get('partner_code')) ||
+            sanitizeCode(params.get('a_aid')) ||
+            sanitizeCode(params.get('ref_id'))
+          );
+        }
+
         var rawDelay = Number(pageRoot.getAttribute('data-go-bot-redirect-delay-ms'));
         var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
+
+        var statusNode = document.querySelector('[data-go-bot-status]');
+        var ctaNode = document.querySelector('[data-go-bot-link]');
+
+        var resolvedPartnerCode = resolvePartnerCodeFromUrl();
+
+        if (!resolvedPartnerCode) {
+          try {
+            resolvedPartnerCode = sanitizeCode(window.localStorage.getItem(STORAGE_KEY));
+          } catch (_error) {
+            resolvedPartnerCode = null;
+          }
+        }
+
+        if (!resolvedPartnerCode) {
+          resolvedPartnerCode = sanitizeCode(readCookieValue(COOKIE_KEY));
+        }
+
+        if (resolvedPartnerCode) {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, resolvedPartnerCode);
+          } catch (_error) {
+            // Ignore storage errors.
+          }
+
+          writeCookieValue(COOKIE_KEY, resolvedPartnerCode);
+        }
+
+        var baseBotUrl = ctaNode ? ctaNode.getAttribute('href') || DEFAULT_BOT_LINK : DEFAULT_BOT_LINK;
+        var redirectUrl = appendPartnerCode(baseBotUrl, resolvedPartnerCode);
+
+        if (ctaNode && ctaNode.getAttribute('href') !== redirectUrl) {
+          ctaNode.setAttribute('href', redirectUrl);
+        }
+
+        if (statusNode) {
+          statusNode.textContent = 'Переходим в Telegram через несколько секунд...';
+        }
+
+        try {
+          // Warm up DNS/TLS so redirect to BotHelp starts faster.
+          var warmupUrl = new URL(redirectUrl);
+          fetch(warmupUrl.origin + '/', { mode: 'no-cors', cache: 'no-store', keepalive: true });
+        } catch (_error) {
+          // Ignore warmup failures.
+        }
 
         var ringNode = document.querySelector('[data-partner-link-ring]');
         var secondsNodes = document.querySelectorAll('[data-partner-link-seconds], [data-partner-link-seconds-inline]');
         var timerCircumference = 314.1592653589793;
         var startTs = Date.now();
+        var redirected = false;
+
+        function redirectNow() {
+          if (redirected) {
+            return;
+          }
+
+          redirected = true;
+          window.location.replace(redirectUrl);
+        }
 
         function render(remainingMs) {
           var safeRemaining = Math.max(0, Math.min(totalMs, remainingMs));
@@ -116,8 +259,12 @@
 
           if (remainingMs <= 0) {
             window.clearInterval(tickInterval);
+            redirectNow();
           }
         }, 100);
+
+        // Fallback in case interval throttles in background tabs.
+        window.setTimeout(redirectNow, totalMs + 250);
       })();
     </script>
   </body>
