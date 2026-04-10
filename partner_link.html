@@ -42,9 +42,9 @@
       data-go-bot-page
       data-go-bot-force-redirect="true"
       data-go-bot-redirect-delay-ms="3000"
-      data-go-bot-ready-text="Переходим в Telegram через несколько секунд..."
-      data-go-bot-missing-text="Переходим в Telegram через несколько секунд..."
-      data-go-bot-redirect-text="Переходим в Telegram через несколько секунд..."
+      data-go-bot-ready-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
+      data-go-bot-missing-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
+      data-go-bot-redirect-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
     >
       <div class="partner-redirect__ambient partner-redirect__ambient--one" aria-hidden="true"></div>
       <div class="partner-redirect__ambient partner-redirect__ambient--two" aria-hidden="true"></div>
@@ -55,7 +55,7 @@
         </a>
 
         <h1 class="partner-redirect__title">Переход в Telegram</h1>
-        <p class="partner-redirect__status" data-go-bot-status>Готовим безопасный переход...</p>
+        <p class="partner-redirect__status" data-go-bot-status>Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом</p>
 
         <div class="bot-redirect-timer partner-redirect__timer" data-partner-link-timer>
           <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true">
@@ -72,7 +72,7 @@
         </div>
 
         <p class="partner-redirect__countdown">
-          Автопереход через <span data-partner-link-seconds-inline>3</span> сек.
+          Переход через <span data-partner-link-seconds-inline>3</span> сек.
         </p>
 
         <div class="partner-redirect__actions">
@@ -282,7 +282,7 @@
         }
 
         if (statusNode) {
-          statusNode.textContent = 'Переходим в Telegram через несколько секунд...';
+          statusNode.textContent = 'Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом';
         }
 
         try {
