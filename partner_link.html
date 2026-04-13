@@ -178,14 +178,36 @@
           }
         }
 
-        function resolvePartnerCodeFromUrl() {
-          var params = new URLSearchParams(window.location.search || '');
+        function getPartnerCodeFromSearch(search) {
+          var params = new URLSearchParams(search || '');
 
           return (
             sanitizeCode(params.get('partner_code')) ||
             sanitizeCode(params.get('a_aid')) ||
             sanitizeCode(params.get('ref_id'))
           );
+        }
+
+        function hasRefIdInSearch(search) {
+          var params = new URLSearchParams(search || '');
+          return params.has('ref_id') && !!sanitizeCode(params.get('ref_id'));
+        }
+
+        function resolvePartnerCodeFromUrl() {
+          return getPartnerCodeFromSearch(window.location.search || '');
+        }
+
+        function resolvePartnerCodeFromReferrer() {
+          if (!document.referrer) {
+            return null;
+          }
+
+          try {
+            var referrerUrl = new URL(document.referrer);
+            return getPartnerCodeFromSearch(referrerUrl.search || '');
+          } catch (_error) {
+            return null;
+          }
         }
 
         function sendMetrikaHit(partnerCode) {
@@ -228,15 +250,27 @@
 
         var rawDelay = Number(pageRoot.getAttribute('data-go-bot-redirect-delay-ms'));
         var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
+        var hasRefIdInCurrentUrl = hasRefIdInSearch(window.location.search || '');
 
         var statusNode = document.querySelector('[data-go-bot-status]');
         var ctaNode = document.querySelector('[data-go-bot-link]');
 
         var resolvedPartnerCode = resolvePartnerCodeFromUrl();
+        var partnerCodeSource = resolvedPartnerCode ? 'url' : 'none';
+
+        if (!resolvedPartnerCode) {
+          resolvedPartnerCode = resolvePartnerCodeFromReferrer();
+          if (resolvedPartnerCode) {
+            partnerCodeSource = 'referrer';
+          }
+        }
 
         if (!resolvedPartnerCode) {
           try {
             resolvedPartnerCode = sanitizeCode(window.localStorage.getItem(STORAGE_KEY));
+            if (resolvedPartnerCode) {
+              partnerCodeSource = 'storage';
+            }
           } catch (_error) {
             resolvedPartnerCode = null;
           }
@@ -244,6 +278,9 @@
 
         if (!resolvedPartnerCode) {
           resolvedPartnerCode = sanitizeCode(readCookieValue(COOKIE_KEY));
+          if (resolvedPartnerCode) {
+            partnerCodeSource = 'cookie';
+          }
         }
 
         if (resolvedPartnerCode) {
@@ -265,8 +302,20 @@
         window.dataLayer.push({
           event: 'partner_link_view',
           partner_code: resolvedPartnerCode || '',
+          partner_code_source: partnerCodeSource,
           redirect_delay_ms: totalMs
         });
+
+        if (!hasRefIdInCurrentUrl) {
+          window.dataLayer.push({
+            event: 'partner_link_missing_ref_id',
+            partner_code: resolvedPartnerCode || '',
+            partner_code_source: partnerCodeSource,
+            recovered_from_referrer: partnerCodeSource === 'referrer',
+            page_url: window.location.href,
+            referrer: document.referrer || ''
+          });
+        }
 
         if (ctaNode && ctaNode.getAttribute('href') !== redirectUrl) {
           ctaNode.setAttribute('href', redirectUrl);
