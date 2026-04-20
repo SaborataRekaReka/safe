@@ -7,6 +7,7 @@ Disallow: /partner_link.html
 Disallow: /test-bot
 Disallow: /test-bot.html
 Disallow: /lead-submit.php
+Disallow: /lead-submit-v2.php
 Disallow: /privacy-policy
 Disallow: /privacy-policy.html
 Disallow: /cookies-policy

@@ -30,7 +30,7 @@ const DEFAULT_SITE_CONFIG = {
   },
   leadForm: {
     successUrl: '/thank-you',
-    endpointUrl: '/lead-submit.php',
+    endpointUrl: '/lead-submit-v2.php',
     telegramWebhookUrl: '',
     telegramBotToken: '',
     telegramChatId: '',
