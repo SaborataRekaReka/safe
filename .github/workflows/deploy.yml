@@ -13,6 +13,7 @@ jobs:
         include:
           - bot_secret_name: TELEGRAM_BOT_TOKEN
             chat_secret_name: TELEGRAM_CHAT_ID
+            proxy_secret_name: TELEGRAM_PROXY
 
     steps:
       - name: Deploy via SSH
@@ -30,7 +31,8 @@ jobs:
             <?php
             return [
               'telegram_bot_token' => '${{ secrets[matrix.bot_secret_name] }}',
-              'telegram_chat_id' => '${{ secrets[matrix.chat_secret_name] }}'
+              'telegram_chat_id' => '${{ secrets[matrix.chat_secret_name] }}',
+              'telegram_proxy' => '${{ secrets[matrix.proxy_secret_name] }}'
             ];
             PHP
             chmod 644 .lead-secrets.php

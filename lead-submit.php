@@ -44,7 +44,7 @@ function truncateUtf8($value, $maxLength)
     return substr($value, 0, $maxLength);
 }
 
-function sendToTelegramApi($token, $chatId, $text)
+function sendToTelegramApi($token, $chatId, $text, $proxy = '')
 {
     $result = array(
         'ok' => false,
@@ -88,6 +88,10 @@ function sendToTelegramApi($token, $chatId, $text)
 
         if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
             curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        }
+
+        if ($proxy !== '') {
+            curl_setopt($curlHandle, CURLOPT_PROXY, $proxy);
         }
 
         $curlResponse = curl_exec($curlHandle);
@@ -196,6 +200,7 @@ if (stringLength($contact) < 3) {
 
 $telegramBotToken = '';
 $telegramChatId = '';
+$telegramProxy = '';
 $secretsPath = __DIR__ . '/.lead-secrets.php';
 
 if (is_readable($secretsPath)) {
@@ -203,6 +208,7 @@ if (is_readable($secretsPath)) {
     if (is_array($fileSecrets)) {
         $telegramBotToken = normalizeValue(isset($fileSecrets['telegram_bot_token']) ? $fileSecrets['telegram_bot_token'] : '');
         $telegramChatId = normalizeValue(isset($fileSecrets['telegram_chat_id']) ? $fileSecrets['telegram_chat_id'] : '');
+        $telegramProxy = normalizeValue(isset($fileSecrets['telegram_proxy']) ? $fileSecrets['telegram_proxy'] : '');
     }
 }
 
@@ -212,6 +218,10 @@ if ($telegramBotToken === '') {
 
 if ($telegramChatId === '') {
     $telegramChatId = normalizeValue(getenv('TELEGRAM_CHAT_ID') ?: '');
+}
+
+if ($telegramProxy === '') {
+    $telegramProxy = normalizeValue(getenv('TELEGRAM_PROXY') ?: '');
 }
 
 if ($telegramBotToken === '' || $telegramChatId === '') {
@@ -242,7 +252,7 @@ if ($createdAt !== '') {
 $telegramText = implode("\n", $messageLines);
 $telegramText = truncateUtf8($telegramText, 3800);
 
-$telegramResult = sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText);
+$telegramResult = sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText, $telegramProxy);
 if (empty($telegramResult['ok'])) {
     $errorDetail = array(
         'error' => isset($telegramResult['error']) ? $telegramResult['error'] : 'unknown_telegram_error',
