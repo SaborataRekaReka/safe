@@ -459,8 +459,12 @@ const sendLeadToServerEndpoint = async (payload, endpointUrl) => {
     throw new Error(errorCode);
   }
 
-  if (!responseData || responseData.ok !== true) {
-    throw new Error('SERVER_ENDPOINT_INVALID_RESPONSE');
+  if (!responseData) {
+    throw new Error('server_endpoint_invalid_response');
+  }
+
+  if (responseData.ok !== true) {
+    throw new Error(responseData.error || 'server_endpoint_invalid_response');
   }
 };
 
@@ -686,6 +690,8 @@ const initContactModal = () => {
 
         if (errorMessage === 'telegram_not_configured') {
           setStatus('Сервис недоступен: Telegram не настроен на сервере. Сообщите администратору.', true);
+        } else if (errorMessage === 'telegram_send_failed') {
+          setStatus('Не удалось доставить заявку в Telegram. Проверьте chat id и что бот имеет доступ к чату.', true);
         } else {
           setStatus('Не удалось отправить заявку. Попробуйте еще раз или свяжитесь с оператором в Telegram.', true);
         }

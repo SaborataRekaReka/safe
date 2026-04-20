@@ -181,7 +181,7 @@ if ($telegramChatId === '') {
 }
 
 if ($telegramBotToken === '' || $telegramChatId === '') {
-    respond(500, array('ok' => false, 'error' => 'telegram_not_configured'));
+    respond(200, array('ok' => false, 'error' => 'telegram_not_configured'));
 }
 
 $messageLines = array(
@@ -209,7 +209,7 @@ $telegramText = implode("\n", $messageLines);
 $telegramText = truncateUtf8($telegramText, 3800);
 
 if (!sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText)) {
-    respond(502, array('ok' => false, 'error' => 'telegram_send_failed'));
+    respond(200, array('ok' => false, 'error' => 'telegram_send_failed'));
 }
 
 respond(200, array('ok' => true));
