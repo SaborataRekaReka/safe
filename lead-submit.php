@@ -86,6 +86,10 @@ function sendToTelegramApi($token, $chatId, $text)
             )
         );
 
+        if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
+            curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        }
+
         $curlResponse = curl_exec($curlHandle);
         $curlErrorNo = curl_errno($curlHandle);
         $curlErrorMessage = curl_error($curlHandle);
