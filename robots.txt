@@ -6,5 +6,14 @@ Disallow: /partner_link
 Disallow: /partner_link.html
 Disallow: /test-bot
 Disallow: /test-bot.html
+Disallow: /lead-submit.php
+Disallow: /privacy-policy
+Disallow: /privacy-policy.html
+Disallow: /cookies-policy
+Disallow: /cookies-policy.html
+Disallow: /terms-of-use
+Disallow: /terms-of-use.html
+Disallow: /aml-kyc
+Disallow: /aml-kyc.html
 
 Sitemap: https://exchangemoneyt.com/sitemap.xml

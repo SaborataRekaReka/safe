@@ -80,6 +80,22 @@
 - seamenMenuLinks: пункты подменю для раздела моряков
 - footerLinks: пункты футера
 - contactModal: содержимое контактной модалки
+- leadForm.endpointUrl: серверный endpoint для отправки заявок (по умолчанию /lead-submit.php)
+
+## Безопасная отправка заявок в Telegram
+
+Отправка заявок выполняется через серверный endpoint `lead-submit.php`.
+
+Важно:
+
+- Telegram token и chat id не должны храниться в `site.config.js`.
+- На сервере используется файл `.lead-secrets.php` (не в git) или переменные окружения `TELEGRAM_BOT_TOKEN` и `TELEGRAM_CHAT_ID`.
+- В репозитории есть шаблон `lead-secrets.example.php`.
+
+Для автоматической настройки при деплое через GitHub Actions добавьте Repository Secrets:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
 
 ### SAFE_PARTNER_CONFIG
 

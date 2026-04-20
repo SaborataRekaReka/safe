@@ -10,12 +10,34 @@ window.SAFE_SITE_CONFIG = {
     { href: "/kadmos", label: "Вывод с Kadmos" },
     { href: "/company", label: "Вывод с компании" }
   ],
+  legalLinks: [
+    { href: "/privacy-policy", label: "Privacy Policy" },
+    { href: "/cookies-policy", label: "Cookies Policy" },
+    { href: "/terms-of-use", label: "Terms of Use" },
+    { href: "/aml-kyc", label: "AML/KYC" }
+  ],
   contactModal: {
-    title: "Актуальные способы связи",
-    telegramAccount: { href: "https://t.me/Danil_Berdykin", label: "@Danil_Berdykin" },
-    telegramGroup: { href: "https://t.me/exchangemoneyt", label: "https://t.me/exchangemoneyt" },
-    vkGroup: { href: "https://vk.com/safe_fin", label: "https://vk.com/safe_fin" },
-    email: "ask@safe-fin.com"
+    title: "Оставьте заявку",
+    description: "Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.",
+    submitLabel: "Отправить заявку",
+    operatorTelegram: { href: "https://t.me/Danil_Berdykin", label: "@Danil_Berdykin" }
+  },
+  legalPages: {
+    privacy: "/privacy-policy",
+    cookies: "/cookies-policy",
+    terms: "/terms-of-use",
+    aml: "/aml-kyc"
+  },
+  leadForm: {
+    successUrl: "/thank-you",
+    endpointUrl: "/lead-submit.php",
+    telegramWebhookUrl: "",
+    telegramBotToken: "",
+    telegramChatId: "",
+    operatorLink: "https://t.me/Danil_Berdykin"
+  },
+  cookieConsent: {
+    storageKey: "safe_cookie_consent_v1"
   }
 };
 

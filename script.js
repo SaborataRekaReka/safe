@@ -10,16 +10,61 @@ const DEFAULT_SITE_CONFIG = {
     { href: '/kadmos', label: 'Вывод с Kadmos' },
     { href: '/company', label: 'Вывод с компании' }
   ],
+  legalLinks: [
+    { href: '/privacy-policy', label: 'Privacy Policy' },
+    { href: '/cookies-policy', label: 'Cookies Policy' },
+    { href: '/terms-of-use', label: 'Terms of Use' },
+    { href: '/aml-kyc', label: 'AML/KYC' }
+  ],
+  legalPages: {
+    privacy: '/privacy-policy',
+    cookies: '/cookies-policy',
+    terms: '/terms-of-use',
+    aml: '/aml-kyc'
+  },
   contactModal: {
-    title: 'Актуальные способы связи',
-    telegramAccount: { href: 'https://t.me/Danil_Berdykin', label: '@Danil_Berdykin' },
-    telegramGroup: { href: 'https://t.me/exchangemoneyt', label: 'https://t.me/exchangemoneyt' },
-    vkGroup: { href: 'https://vk.com/safe_fin', label: 'https://vk.com/safe_fin' },
-    email: 'ask@safe-fin.com'
+    title: 'Оставьте заявку',
+    description: 'Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.',
+    submitLabel: 'Отправить заявку',
+    operatorTelegram: { href: 'https://t.me/Danil_Berdykin', label: '@Danil_Berdykin' }
+  },
+  leadForm: {
+    successUrl: '/thank-you',
+    endpointUrl: '/lead-submit.php',
+    telegramWebhookUrl: '',
+    telegramBotToken: '',
+    telegramChatId: '',
+    operatorLink: 'https://t.me/Danil_Berdykin'
+  },
+  cookieConsent: {
+    storageKey: 'safe_cookie_consent_v1'
   }
 };
 
 const SITE_CONFIG = window.SAFE_SITE_CONFIG || DEFAULT_SITE_CONFIG;
+
+const PROCESS_COPY = {
+  title: 'Процесс перевода средств через наш сервис',
+  description: 'Коротко расскажем, как проходит процесс перевода средств через наш сервис',
+  steps: [
+    {
+      title: 'Идентификация в чате',
+      text: 'Свяжитесь с оператором через Telegram. Уточните основные параметры перевода: платежная система, валюта отправки, сумма и валюта назначения.'
+    },
+    {
+      title: 'Перевод средств на наши реквизиты',
+      text: 'Оператор предоставит реквизиты для перевода.'
+    },
+    {
+      title: 'Поступление денежных средств',
+      text: 'Дождитесь зачисления денег на наш счет. Обычно это занимает от нескольких часов до трех рабочих дней. В редких случаях возможны задержки, мы всегда поможем выяснить их причины и ускорить процесс.'
+    },
+    {
+      title: 'Получение средств на ваш счёт или другим способом',
+      text: 'После поступления средств на наш счет мы переведём деньги по вашим реквизитам. Возможен вывод в разных валютах и странах по запросу.'
+    }
+  ]
+};
 
 const normalizeRoutePath = (value = '') => {
   if (!value) {
@@ -43,6 +88,16 @@ const normalizeRoutePath = (value = '') => {
 };
 
 const toCleanPath = (value = '') => normalizeRoutePath(value);
+
+const escapeHtml = (value = '') =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const normalizeLeadValue = (value = '') => String(value).replace(/\s+/g, ' ').trim();
 
 const redirectLegacyHtmlPath = () => {
   const pathname = window.location.pathname || '/';
@@ -73,8 +128,55 @@ const isMarTrustLink = (href = '') => {
   }
 };
 
+const getTelegramUsername = (rawHref = '') => {
+  if (!rawHref) {
+    return '';
+  }
+
+  let resolvedUrl;
+  try {
+    resolvedUrl = new URL(rawHref, window.location.origin);
+  } catch {
+    return '';
+  }
+
+  if (resolvedUrl.hostname.toLowerCase() !== 't.me') {
+    return '';
+  }
+
+  const pathname = resolvedUrl.pathname.replace(/^\/+/, '');
+  return pathname.replace(/^@/, '').toLowerCase();
+};
+
+const getOperatorUsernames = () => {
+  const usernames = new Set();
+  const modalOperator = SITE_CONFIG.contactModal?.operatorTelegram?.href || '';
+  const leadOperator = SITE_CONFIG.leadForm?.operatorLink || '';
+
+  [modalOperator, leadOperator].forEach((href) => {
+    const username = getTelegramUsername(href);
+    if (username) {
+      usernames.add(username);
+    }
+  });
+
+  return usernames;
+};
+
+const OPERATOR_USERNAMES = getOperatorUsernames();
+
+const isOperatorTelegramHref = (rawHref = '') => {
+  if (!rawHref || OPERATOR_USERNAMES.size === 0) {
+    return false;
+  }
+
+  const username = getTelegramUsername(rawHref);
+  return username ? OPERATOR_USERNAMES.has(username) : false;
+};
+
 const SEAMEN_MENU_LINKS = SITE_CONFIG.seamenMenuLinks.filter((item) => !isMarTrustLink(item.href));
 const FOOTER_LINKS = SITE_CONFIG.footerLinks.filter((item) => !isMarTrustLink(item.href));
+const LEGAL_LINKS = Array.isArray(SITE_CONFIG.legalLinks) ? SITE_CONFIG.legalLinks : [];
 
 const CURRENT_PATH = normalizeRoutePath(window.location.pathname);
 const SEAMEN_PAGES = new Set(SEAMEN_MENU_LINKS.map((item) => normalizeRoutePath(item.href)));
@@ -112,8 +214,25 @@ const renderFooter = () => {
   });
 
   document.querySelectorAll('.site-footer__menu ul').forEach((list) => {
-    list.innerHTML = FOOTER_LINKS
-      .map((item) => `<li><a href="${toCleanPath(item.href)}">${item.label}</a></li>`)
+    list.innerHTML = FOOTER_LINKS.map((item) => `<li><a href="${toCleanPath(item.href)}">${item.label}</a></li>`).join('');
+  });
+};
+
+const renderFooterLegalLinks = () => {
+  if (LEGAL_LINKS.length === 0) {
+    return;
+  }
+
+  document.querySelectorAll('.site-footer__content').forEach((content) => {
+    let legalWrap = content.querySelector('.site-footer__legal');
+    if (!legalWrap) {
+      legalWrap = document.createElement('div');
+      legalWrap.className = 'site-footer__legal';
+      content.append(legalWrap);
+    }
+
+    legalWrap.innerHTML = LEGAL_LINKS
+      .map((item) => `<a class="site-footer__legal-link" href="${toCleanPath(item.href)}">${item.label}</a>`)
       .join('');
   });
 };
@@ -158,10 +277,57 @@ const sanitizeMarTrustLinksInMenu = () => {
   });
 };
 
+const syncProcessSections = () => {
+  document.querySelectorAll('.process').forEach((section) => {
+    const title = section.querySelector('.process__title');
+    const description = section.querySelector('.process__descr');
+    const list = section.querySelector('.process__list');
+
+    if (!title || !description || !list) {
+      return;
+    }
+
+    title.textContent = PROCESS_COPY.title;
+    description.textContent = PROCESS_COPY.description;
+    list.innerHTML = PROCESS_COPY.steps
+      .map(
+        (item) => `
+        <li class="process-step">
+          <span class="process-step__num" aria-hidden="true"></span>
+          <div class="process-step__text">
+            <h3>${escapeHtml(item.title)}</h3>
+            <p>${escapeHtml(item.text)}</p>
+          </div>
+        </li>`
+      )
+      .join('');
+  });
+};
+
 const normalizeContactTriggers = () => {
   document.querySelectorAll('a[href="#contactform"]').forEach((link) => {
     link.setAttribute('data-open-contact-modal', '');
   });
+
+  document.querySelectorAll('a[href]').forEach((link) => {
+    if (link.hasAttribute('data-allow-direct-telegram')) {
+      return;
+    }
+
+    const href = link.getAttribute('href') || '';
+    if (!isOperatorTelegramHref(href)) {
+      return;
+    }
+
+    link.setAttribute('href', '#contactform');
+    link.setAttribute('data-open-contact-modal', '');
+    link.removeAttribute('target');
+  });
+};
+
+const getLegalPath = (type, fallbackValue) => {
+  const value = SITE_CONFIG.legalPages?.[type] || fallbackValue;
+  return toCleanPath(value);
 };
 
 const createOrSyncContactModal = () => {
@@ -178,32 +344,167 @@ const createOrSyncContactModal = () => {
   modal.setAttribute('aria-modal', 'true');
   modal.setAttribute('aria-labelledby', 'contact-modal-title');
 
-  const { title, telegramAccount, telegramGroup, vkGroup, email } = SITE_CONFIG.contactModal;
+  const contactModalConfig = SITE_CONFIG.contactModal || {};
+  const title = contactModalConfig.title || 'Оставьте заявку';
+  const description =
+    contactModalConfig.description ||
+    'Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.';
+  const submitLabel = contactModalConfig.submitLabel || 'Отправить заявку';
+  const privacyPath = getLegalPath('privacy', '/privacy-policy');
+  const termsPath = getLegalPath('terms', '/terms-of-use');
+
   modal.innerHTML = `
     <button class="contact-modal__backdrop" type="button" aria-label="Закрыть" data-contact-modal-close></button>
     <div class="contact-modal__dialog" role="document">
       <button class="contact-modal__close" type="button" aria-label="Закрыть" data-contact-modal-close>
         <span aria-hidden="true">&times;</span>
       </button>
-      <h2 class="contact-modal__title" id="contact-modal-title">${title}</h2>
+      <h2 class="contact-modal__title" id="contact-modal-title">${escapeHtml(title)}</h2>
       <div class="contact-modal__content">
-        <p>
-          Наш официальный Телеграмм-аккаунт для переводов:
-          <a href="${telegramAccount.href}" target="_blank" rel="noopener noreferrer">${telegramAccount.label}</a>
-        </p>
-        <p>
-          Официальная группа в Телеграмм:
-          <a href="${telegramGroup.href}" target="_blank" rel="noopener noreferrer">${telegramGroup.label}</a>
-        </p>
-        <p>
-          Официальная группа Вконтакте:
-          <a href="${vkGroup.href}" target="_blank" rel="noopener noreferrer">${vkGroup.label}</a>
-        </p>
-        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p class="contact-modal__lead">${escapeHtml(description)}</p>
+        <form class="contact-form" data-contact-form novalidate>
+          <label class="contact-form__field" for="contact-name">
+            <span class="contact-form__label">Имя</span>
+            <input class="contact-form__input" id="contact-name" name="name" type="text" autocomplete="name" required />
+          </label>
+          <label class="contact-form__field" for="contact-point">
+            <span class="contact-form__label">Telegram или телефон</span>
+            <input class="contact-form__input" id="contact-point" name="contact" type="text" autocomplete="tel" required />
+          </label>
+          <label class="contact-form__field" for="contact-message">
+            <span class="contact-form__label">Комментарий (необязательно)</span>
+            <textarea class="contact-form__textarea" id="contact-message" name="message" rows="3" maxlength="800"></textarea>
+          </label>
+          <label class="contact-form__consent" for="contact-consent">
+            <input class="contact-form__checkbox" id="contact-consent" name="privacyConsent" type="checkbox" required />
+            <span>
+              Я соглашаюсь с
+              <a href="${privacyPath}" target="_blank" rel="noopener noreferrer">политикой обработки персональных данных</a>
+              и
+              <a href="${termsPath}" target="_blank" rel="noopener noreferrer">условиями использования</a>.
+            </span>
+          </label>
+          <p class="contact-form__status" data-contact-form-status aria-live="polite"></p>
+          <button class="contact-form__submit btn btn--size-cta btn--filled-accent" type="submit">${escapeHtml(submitLabel)}</button>
+        </form>
       </div>
     </div>`;
 
   return modal;
+};
+
+const getLeadFormConfig = () => SITE_CONFIG.leadForm || {};
+
+const buildLeadPayload = ({ name, contact, message }) => ({
+  name,
+  contact,
+  message,
+  pageTitle: document.title,
+  pageUrl: window.location.href,
+  createdAt: new Date().toISOString(),
+  userAgent: navigator.userAgent
+});
+
+const buildLeadMessage = (payload) => {
+  const lines = [
+    'Новая заявка с сайта SAFE',
+    '',
+    `Имя: ${payload.name}`,
+    `Контакт: ${payload.contact}`,
+    `Комментарий: ${payload.message || 'не указан'}`,
+    '',
+    `Страница: ${payload.pageTitle}`,
+    `URL: ${payload.pageUrl}`,
+    `Дата: ${new Date(payload.createdAt).toLocaleString('ru-RU')}`
+  ];
+
+  return lines.join('\n');
+};
+
+const sendLeadToWebhook = async (payload, webhookUrl) => {
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error('WEBHOOK_SEND_FAILED');
+  }
+};
+
+const sendLeadToServerEndpoint = async (payload, endpointUrl) => {
+  const response = await fetch(endpointUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error('SERVER_ENDPOINT_SEND_FAILED');
+  }
+
+  const responseData = await response.json().catch(() => null);
+  if (!responseData || responseData.ok !== true) {
+    throw new Error('SERVER_ENDPOINT_INVALID_RESPONSE');
+  }
+};
+
+const sendLeadToTelegramApi = async (message, token, chatId) => {
+  const endpoint = `https://api.telegram.org/bot${token}/sendMessage`;
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body: new URLSearchParams({
+      chat_id: chatId,
+      text: message
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error('TELEGRAM_API_SEND_FAILED');
+  }
+};
+
+const sendLeadToOperatorLink = (message, operatorLink) => {
+  if (!operatorLink) {
+    throw new Error('OPERATOR_LINK_MISSING');
+  }
+
+  const url = new URL(operatorLink, window.location.origin);
+  if (url.hostname.toLowerCase() === 't.me') {
+    url.searchParams.set('text', message);
+  }
+
+  window.open(url.toString(), '_blank', 'noopener,noreferrer');
+};
+
+const deliverLead = async (payload) => {
+  const leadConfig = getLeadFormConfig();
+  const message = buildLeadMessage(payload);
+
+  if (leadConfig.endpointUrl) {
+    await sendLeadToServerEndpoint(payload, leadConfig.endpointUrl);
+    return;
+  }
+
+  if (leadConfig.telegramWebhookUrl) {
+    await sendLeadToWebhook(payload, leadConfig.telegramWebhookUrl);
+    return;
+  }
+
+  if (leadConfig.telegramBotToken && leadConfig.telegramChatId) {
+    await sendLeadToTelegramApi(message, leadConfig.telegramBotToken, leadConfig.telegramChatId);
+    return;
+  }
+
+  sendLeadToOperatorLink(message, leadConfig.operatorLink || SITE_CONFIG.contactModal?.operatorTelegram?.href);
 };
 
 const initNavigation = () => {
@@ -287,11 +588,25 @@ const initContactModal = () => {
   const contactModal = createOrSyncContactModal();
   const modalCloseTriggers = contactModal.querySelectorAll('[data-contact-modal-close]');
   const modalCloseButton = contactModal.querySelector('.contact-modal__close');
+  const contactForm = contactModal.querySelector('[data-contact-form]');
+  const statusNode = contactModal.querySelector('[data-contact-form-status]');
+  const submitButton = contactModal.querySelector('.contact-form__submit');
+
+  const setStatus = (message, isError = false) => {
+    if (!statusNode) {
+      return;
+    }
+
+    statusNode.textContent = message;
+    statusNode.classList.toggle('is-error', isError);
+    statusNode.classList.toggle('is-success', !isError && Boolean(message));
+  };
 
   const openContactModal = () => {
     contactModal.classList.add('is-open');
     contactModal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
+    setStatus('');
     if (modalCloseButton) {
       modalCloseButton.focus();
     }
@@ -301,6 +616,7 @@ const initContactModal = () => {
     contactModal.classList.remove('is-open');
     contactModal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+    setStatus('');
   };
 
   modalOpenTriggers.forEach((trigger) => {
@@ -314,18 +630,125 @@ const initContactModal = () => {
     trigger.addEventListener('click', closeContactModal);
   });
 
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setStatus('');
+
+      const formData = new FormData(contactForm);
+      const name = normalizeLeadValue(formData.get('name'));
+      const contact = normalizeLeadValue(formData.get('contact'));
+      const message = normalizeLeadValue(formData.get('message'));
+      const hasConsent = formData.get('privacyConsent') === 'on';
+
+      if (name.length < 2) {
+        setStatus('Укажите корректное имя.', true);
+        return;
+      }
+
+      if (contact.length < 3) {
+        setStatus('Укажите контакт в Telegram или номер телефона.', true);
+        return;
+      }
+
+      if (!hasConsent) {
+        setStatus('Подтвердите согласие с политикой обработки персональных данных.', true);
+        return;
+      }
+
+      const payload = buildLeadPayload({ name, contact, message });
+
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
+
+      setStatus('Отправляем заявку...');
+
+      try {
+        await deliverLead(payload);
+        contactForm.reset();
+        closeContactModal();
+
+        const successUrl = toCleanPath(getLeadFormConfig().successUrl || '/thank-you');
+        window.location.assign(successUrl);
+      } catch {
+        setStatus('Не удалось отправить заявку. Попробуйте еще раз или свяжитесь с оператором в Telegram.', true);
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      }
+    });
+  }
+
   return { closeContactModal, contactModal };
+};
+
+const getStoredConsent = (storageKey) => {
+  try {
+    return window.localStorage.getItem(storageKey);
+  } catch {
+    return null;
+  }
+};
+
+const storeConsent = (storageKey, value) => {
+  try {
+    window.localStorage.setItem(storageKey, value);
+  } catch {
+    // Ignore storage access errors.
+  }
+};
+
+const initCookieConsent = () => {
+  const storageKey = SITE_CONFIG.cookieConsent?.storageKey || 'safe_cookie_consent_v1';
+  if (getStoredConsent(storageKey)) {
+    return;
+  }
+
+  const privacyPath = getLegalPath('privacy', '/privacy-policy');
+  const cookiesPath = getLegalPath('cookies', '/cookies-policy');
+
+  const banner = document.createElement('aside');
+  banner.className = 'cookie-consent';
+  banner.setAttribute('role', 'dialog');
+  banner.setAttribute('aria-live', 'polite');
+  banner.innerHTML = `
+    <div class="cookie-consent__inner">
+      <p class="cookie-consent__text">
+        Мы используем cookie для корректной работы сайта и аналитики. Продолжая использовать сайт, вы соглашаетесь с
+        <a href="${privacyPath}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        и
+        <a href="${cookiesPath}" target="_blank" rel="noopener noreferrer">Cookies Policy</a>.
+      </p>
+      <button class="cookie-consent__btn btn btn--size-cta btn--outline-light" type="button" data-cookie-consent-accept>
+        Принять
+      </button>
+    </div>`;
+
+  document.body.append(banner);
+
+  const acceptButton = banner.querySelector('[data-cookie-consent-accept]');
+  if (acceptButton) {
+    acceptButton.addEventListener('click', () => {
+      storeConsent(storageKey, 'accepted');
+      banner.remove();
+    });
+  }
 };
 
 renderSeamenSubmenu();
 syncMainNavActiveLink();
 renderFooter();
+renderFooterLegalLinks();
 sanitizeMarTrustLinksInMenu();
+syncProcessSections();
 rewriteInternalHtmlLinks();
 normalizeContactTriggers();
 
 const navState = initNavigation();
 const modalState = initContactModal();
+initCookieConsent();
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') {
