@@ -70,13 +70,16 @@ function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIp
     $statusCode = 0;
 
     if (function_exists('curl_init')) {
-        $attemptResolveIps = array('');
+        $attemptResolveIps = array();
         foreach ($resolveIps as $candidateIp) {
             $normalizedCandidate = normalizeValue($candidateIp);
             if ($normalizedCandidate !== '' && !in_array($normalizedCandidate, $attemptResolveIps, true)) {
                 $attemptResolveIps[] = $normalizedCandidate;
             }
         }
+
+        // Keep default DNS as a fallback, but try known working IP routes first.
+        $attemptResolveIps[] = '';
 
         foreach ($attemptResolveIps as $resolveIp) {
             $curlHandle = curl_init($endpoint);
