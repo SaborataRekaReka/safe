@@ -46,6 +46,13 @@ function truncateUtf8($value, $maxLength)
 
 function sendToTelegramApi($token, $chatId, $text)
 {
+    $result = array(
+        'ok' => false,
+        'error' => 'unknown_telegram_error',
+        'status' => 0,
+        'description' => ''
+    );
+
     $endpoint = 'https://api.telegram.org/bot' . rawurlencode($token) . '/sendMessage';
     $postFields = http_build_query(
         array(
@@ -63,7 +70,8 @@ function sendToTelegramApi($token, $chatId, $text)
     if (function_exists('curl_init')) {
         $curlHandle = curl_init($endpoint);
         if ($curlHandle === false) {
-            return false;
+            $result['error'] = 'curl_init_failed';
+            return $result;
         }
 
         curl_setopt_array(
@@ -79,11 +87,16 @@ function sendToTelegramApi($token, $chatId, $text)
         );
 
         $curlResponse = curl_exec($curlHandle);
+        $curlErrorNo = curl_errno($curlHandle);
+        $curlErrorMessage = curl_error($curlHandle);
         $statusCode = (int) curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
+        $result['status'] = $statusCode;
         curl_close($curlHandle);
 
-        if (!is_string($curlResponse)) {
-            return false;
+        if ($curlResponse === false || !is_string($curlResponse)) {
+            $result['error'] = 'curl_transport_error';
+            $result['description'] = 'curl_errno_' . (string) $curlErrorNo . ($curlErrorMessage !== '' ? ': ' . $curlErrorMessage : '');
+            return $result;
         }
 
         $responseBody = $curlResponse;
@@ -102,7 +115,9 @@ function sendToTelegramApi($token, $chatId, $text)
 
         $streamResponse = @file_get_contents($endpoint, false, $context);
         if (!is_string($streamResponse)) {
-            return false;
+            $result['error'] = 'stream_transport_error';
+            $result['description'] = 'stream_request_failed';
+            return $result;
         }
 
         $responseBody = $streamResponse;
@@ -111,14 +126,29 @@ function sendToTelegramApi($token, $chatId, $text)
         if (isset($headers[0]) && preg_match('/\s(\d{3})\s/', $headers[0], $matches) === 1) {
             $statusCode = (int) $matches[1];
         }
-    }
 
-    if ($statusCode < 200 || $statusCode >= 300) {
-        return false;
+        $result['status'] = $statusCode;
     }
 
     $decoded = json_decode($responseBody, true);
-    return is_array($decoded) && !empty($decoded['ok']);
+    if (!is_array($decoded)) {
+        $result['error'] = 'telegram_invalid_json';
+        $result['description'] = 'telegram_response_parse_failed';
+        return $result;
+    }
+
+    if (!empty($decoded['ok'])) {
+        return array('ok' => true);
+    }
+
+    $result['error'] = 'telegram_api_error';
+    $result['status'] = isset($decoded['error_code']) ? (int) $decoded['error_code'] : $statusCode;
+    $result['description'] = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
+    if ($result['description'] === '') {
+        $result['description'] = 'telegram_rejected_request';
+    }
+
+    return $result;
 }
 
 $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
@@ -208,8 +238,15 @@ if ($createdAt !== '') {
 $telegramText = implode("\n", $messageLines);
 $telegramText = truncateUtf8($telegramText, 3800);
 
-if (!sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText)) {
-    respond(200, array('ok' => false, 'error' => 'telegram_send_failed'));
+$telegramResult = sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText);
+if (empty($telegramResult['ok'])) {
+    $errorDetail = array(
+        'error' => isset($telegramResult['error']) ? $telegramResult['error'] : 'unknown_telegram_error',
+        'status' => isset($telegramResult['status']) ? (int) $telegramResult['status'] : 0,
+        'description' => isset($telegramResult['description']) ? (string) $telegramResult['description'] : ''
+    );
+
+    respond(200, array('ok' => false, 'error' => 'telegram_send_failed', 'detail' => $errorDetail));
 }
 
 respond(200, array('ok' => true));

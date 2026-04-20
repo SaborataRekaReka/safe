@@ -464,7 +464,11 @@ const sendLeadToServerEndpoint = async (payload, endpointUrl) => {
   }
 
   if (responseData.ok !== true) {
-    throw new Error(responseData.error || 'server_endpoint_invalid_response');
+    const endpointError = new Error(responseData.error || 'server_endpoint_invalid_response');
+    if (responseData.detail && typeof responseData.detail === 'object') {
+      endpointError.details = responseData.detail;
+    }
+    throw endpointError;
   }
 };
 
@@ -687,11 +691,27 @@ const initContactModal = () => {
         window.location.assign(successUrl);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '';
+        const errorDetails =
+          error && typeof error === 'object' && 'details' in error ? error.details : null;
 
         if (errorMessage === 'telegram_not_configured') {
           setStatus('Сервис недоступен: Telegram не настроен на сервере. Сообщите администратору.', true);
         } else if (errorMessage === 'telegram_send_failed') {
-          setStatus('Не удалось доставить заявку в Telegram. Проверьте chat id и что бот имеет доступ к чату.', true);
+          const detailError =
+            errorDetails && typeof errorDetails === 'object' ? String(errorDetails.error || '') : '';
+          const detailDescription =
+            errorDetails && typeof errorDetails === 'object' ? String(errorDetails.description || '') : '';
+
+          if (detailError === 'curl_transport_error' || detailError === 'stream_transport_error') {
+            setStatus(
+              'Сервер не может подключиться к API Telegram. Проверьте сетевой доступ хостинга к api.telegram.org.',
+              true
+            );
+          } else if (detailDescription.toLowerCase().includes('chat not found')) {
+            setStatus('Telegram вернул chat not found. Проверьте chat id и что бот добавлен в нужный чат.', true);
+          } else {
+            setStatus('Не удалось доставить заявку в Telegram. Проверьте chat id и что бот имеет доступ к чату.', true);
+          }
         } else {
           setStatus('Не удалось отправить заявку. Попробуйте еще раз или свяжитесь с оператором в Telegram.', true);
         }
