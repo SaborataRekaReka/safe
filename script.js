@@ -444,11 +444,21 @@ const sendLeadToServerEndpoint = async (payload, endpointUrl) => {
     body: JSON.stringify(payload)
   });
 
-  if (!response.ok) {
-    throw new Error('SERVER_ENDPOINT_SEND_FAILED');
+  const responseBody = await response.text();
+  let responseData = null;
+  if (responseBody) {
+    try {
+      responseData = JSON.parse(responseBody);
+    } catch {
+      responseData = null;
+    }
   }
 
-  const responseData = await response.json().catch(() => null);
+  if (!response.ok) {
+    const errorCode = responseData && responseData.error ? responseData.error : 'server_endpoint_send_failed';
+    throw new Error(errorCode);
+  }
+
   if (!responseData || responseData.ok !== true) {
     throw new Error('SERVER_ENDPOINT_INVALID_RESPONSE');
   }
@@ -671,8 +681,14 @@ const initContactModal = () => {
 
         const successUrl = toCleanPath(getLeadFormConfig().successUrl || '/thank-you');
         window.location.assign(successUrl);
-      } catch {
-        setStatus('Не удалось отправить заявку. Попробуйте еще раз или свяжитесь с оператором в Telegram.', true);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '';
+
+        if (errorMessage === 'telegram_not_configured') {
+          setStatus('Сервис недоступен: Telegram не настроен на сервере. Сообщите администратору.', true);
+        } else {
+          setStatus('Не удалось отправить заявку. Попробуйте еще раз или свяжитесь с оператором в Telegram.', true);
+        }
       } finally {
         if (submitButton) {
           submitButton.disabled = false;

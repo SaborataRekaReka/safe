@@ -33,4 +33,4 @@ jobs:
               'telegram_chat_id' => '${{ secrets[matrix.chat_secret_name] }}'
             ];
             PHP
-            chmod 600 .lead-secrets.php
+            chmod 644 .lead-secrets.php
