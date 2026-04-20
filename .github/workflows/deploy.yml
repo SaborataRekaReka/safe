@@ -14,6 +14,7 @@ jobs:
           - bot_secret_name: TELEGRAM_BOT_TOKEN
             chat_secret_name: TELEGRAM_CHAT_ID
             proxy_secret_name: TELEGRAM_PROXY
+            resolve_ip_secret_name: TELEGRAM_RESOLVE_IP
 
     steps:
       - name: Deploy via SSH
@@ -32,7 +33,8 @@ jobs:
             return [
               'telegram_bot_token' => '${{ secrets[matrix.bot_secret_name] }}',
               'telegram_chat_id' => '${{ secrets[matrix.chat_secret_name] }}',
-              'telegram_proxy' => '${{ secrets[matrix.proxy_secret_name] }}'
+              'telegram_proxy' => '${{ secrets[matrix.proxy_secret_name] }}',
+              'telegram_resolve_ip' => '${{ secrets[matrix.resolve_ip_secret_name] }}'
             ];
             PHP
             chmod 644 .lead-secrets.php

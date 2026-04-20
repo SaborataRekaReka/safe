@@ -46,16 +46,18 @@ function truncateUtf8($value, $maxLength)
     return substr($value, 0, $maxLength);
 }
 
-function sendToTelegramApi($token, $chatId, $text, $proxy = '')
+function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIps = array())
 {
     $result = array(
         'ok' => false,
         'error' => 'unknown_telegram_error',
         'status' => 0,
-        'description' => ''
+        'description' => '',
+        'resolve_ip' => ''
     );
 
     $endpoint = 'https://api.telegram.org/bot' . rawurlencode($token) . '/sendMessage';
+    $endpointHost = 'api.telegram.org';
     $postFields = http_build_query(
         array(
             'chat_id' => $chatId,
@@ -70,46 +72,83 @@ function sendToTelegramApi($token, $chatId, $text, $proxy = '')
     $statusCode = 0;
 
     if (function_exists('curl_init')) {
-        $curlHandle = curl_init($endpoint);
-        if ($curlHandle === false) {
-            $result['error'] = 'curl_init_failed';
+        $attemptResolveIps = array('');
+        foreach ($resolveIps as $candidateIp) {
+            $normalizedCandidate = normalizeValue($candidateIp);
+            if ($normalizedCandidate !== '' && !in_array($normalizedCandidate, $attemptResolveIps, true)) {
+                $attemptResolveIps[] = $normalizedCandidate;
+            }
+        }
+
+        foreach ($attemptResolveIps as $resolveIp) {
+            $curlHandle = curl_init($endpoint);
+            if ($curlHandle === false) {
+                $result['error'] = 'curl_init_failed';
+                return $result;
+            }
+
+            curl_setopt_array(
+                $curlHandle,
+                array(
+                    CURLOPT_POST => true,
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_CONNECTTIMEOUT => 6,
+                    CURLOPT_TIMEOUT => 12,
+                    CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'),
+                    CURLOPT_POSTFIELDS => $postFields
+                )
+            );
+
+            if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
+                curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+            }
+
+            if ($proxy !== '') {
+                curl_setopt($curlHandle, CURLOPT_PROXY, $proxy);
+            }
+
+            if ($resolveIp !== '' && defined('CURLOPT_RESOLVE')) {
+                curl_setopt($curlHandle, CURLOPT_RESOLVE, array($endpointHost . ':443:' . $resolveIp));
+            }
+
+            $curlResponse = curl_exec($curlHandle);
+            $curlErrorNo = curl_errno($curlHandle);
+            $curlErrorMessage = curl_error($curlHandle);
+            $statusCode = (int) curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
+            $result['status'] = $statusCode;
+            $result['resolve_ip'] = $resolveIp;
+            curl_close($curlHandle);
+
+            if ($curlResponse === false || !is_string($curlResponse)) {
+                $result['error'] = 'curl_transport_error';
+                $result['description'] = 'curl_errno_' . (string) $curlErrorNo . ($curlErrorMessage !== '' ? ': ' . $curlErrorMessage : '');
+                continue;
+            }
+
+            $responseBody = $curlResponse;
+
+            $decoded = json_decode($responseBody, true);
+            if (!is_array($decoded)) {
+                $result['error'] = 'telegram_invalid_json';
+                $result['description'] = 'telegram_response_parse_failed';
+                return $result;
+            }
+
+            if (!empty($decoded['ok'])) {
+                return array('ok' => true);
+            }
+
+            $result['error'] = 'telegram_api_error';
+            $result['status'] = isset($decoded['error_code']) ? (int) $decoded['error_code'] : $statusCode;
+            $result['description'] = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
+            if ($result['description'] === '') {
+                $result['description'] = 'telegram_rejected_request';
+            }
+
             return $result;
         }
 
-        curl_setopt_array(
-            $curlHandle,
-            array(
-                CURLOPT_POST => true,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_CONNECTTIMEOUT => 6,
-                CURLOPT_TIMEOUT => 12,
-                CURLOPT_HTTPHEADER => array('Content-Type: application/x-www-form-urlencoded;charset=UTF-8'),
-                CURLOPT_POSTFIELDS => $postFields
-            )
-        );
-
-        if (defined('CURLOPT_IPRESOLVE') && defined('CURL_IPRESOLVE_V4')) {
-            curl_setopt($curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        }
-
-        if ($proxy !== '') {
-            curl_setopt($curlHandle, CURLOPT_PROXY, $proxy);
-        }
-
-        $curlResponse = curl_exec($curlHandle);
-        $curlErrorNo = curl_errno($curlHandle);
-        $curlErrorMessage = curl_error($curlHandle);
-        $statusCode = (int) curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
-        $result['status'] = $statusCode;
-        curl_close($curlHandle);
-
-        if ($curlResponse === false || !is_string($curlResponse)) {
-            $result['error'] = 'curl_transport_error';
-            $result['description'] = 'curl_errno_' . (string) $curlErrorNo . ($curlErrorMessage !== '' ? ': ' . $curlErrorMessage : '');
-            return $result;
-        }
-
-        $responseBody = $curlResponse;
+        return $result;
     } else {
         $context = stream_context_create(
             array(
@@ -203,6 +242,7 @@ if (stringLength($contact) < 3) {
 $telegramBotToken = '';
 $telegramChatId = '';
 $telegramProxy = '';
+$telegramResolveIp = '';
 $secretsPath = __DIR__ . '/.lead-secrets.php';
 
 if (is_readable($secretsPath)) {
@@ -211,6 +251,7 @@ if (is_readable($secretsPath)) {
         $telegramBotToken = normalizeValue(isset($fileSecrets['telegram_bot_token']) ? $fileSecrets['telegram_bot_token'] : '');
         $telegramChatId = normalizeValue(isset($fileSecrets['telegram_chat_id']) ? $fileSecrets['telegram_chat_id'] : '');
         $telegramProxy = normalizeValue(isset($fileSecrets['telegram_proxy']) ? $fileSecrets['telegram_proxy'] : '');
+        $telegramResolveIp = normalizeValue(isset($fileSecrets['telegram_resolve_ip']) ? $fileSecrets['telegram_resolve_ip'] : '');
     }
 }
 
@@ -224,6 +265,10 @@ if ($telegramChatId === '') {
 
 if ($telegramProxy === '') {
     $telegramProxy = normalizeValue(getenv('TELEGRAM_PROXY') ?: '');
+}
+
+if ($telegramResolveIp === '') {
+    $telegramResolveIp = normalizeValue(getenv('TELEGRAM_RESOLVE_IP') ?: '');
 }
 
 if ($telegramBotToken === '' || $telegramChatId === '') {
@@ -254,12 +299,19 @@ if ($createdAt !== '') {
 $telegramText = implode("\n", $messageLines);
 $telegramText = truncateUtf8($telegramText, 3800);
 
-$telegramResult = sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText, $telegramProxy);
+$telegramResolveIps = array();
+if ($telegramResolveIp !== '') {
+    $telegramResolveIps[] = $telegramResolveIp;
+}
+$telegramResolveIps[] = '149.154.167.220';
+
+$telegramResult = sendToTelegramApi($telegramBotToken, $telegramChatId, $telegramText, $telegramProxy, $telegramResolveIps);
 if (empty($telegramResult['ok'])) {
     $errorDetail = array(
         'error' => isset($telegramResult['error']) ? $telegramResult['error'] : 'unknown_telegram_error',
         'status' => isset($telegramResult['status']) ? (int) $telegramResult['status'] : 0,
-        'description' => isset($telegramResult['description']) ? (string) $telegramResult['description'] : ''
+        'description' => isset($telegramResult['description']) ? (string) $telegramResult['description'] : '',
+        'resolveIp' => isset($telegramResult['resolve_ip']) ? (string) $telegramResult['resolve_ip'] : ''
     );
 
     respond(200, array('ok' => false, 'error' => 'telegram_send_failed', 'detail' => $errorDetail));
