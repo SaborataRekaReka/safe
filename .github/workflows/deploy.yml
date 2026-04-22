@@ -26,7 +26,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             set -e
-            cd ${{ secrets.DEPLOY_PATH }}
+            cd /var/www/fastuser/data/www/safe-fin.com
             git pull origin main
             cat > .lead-secrets.php <<'PHP'
             <?php

@@ -17,4 +17,4 @@ Disallow: /terms-of-use.html
 Disallow: /aml-kyc
 Disallow: /aml-kyc.html
 
-Sitemap: https://exchangemoneyt.com/sitemap.xml
+Sitemap: https://safe-fin.com/sitemap.xml
