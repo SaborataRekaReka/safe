@@ -97,7 +97,69 @@ const escapeHtml = (value = '') =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const normalizeLeadValue = (value = '') => String(value).replace(/\s+/g, ' ').trim();
+const normalizeLeadValue = (value = '') => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return String(value).replace(/\s+/g, ' ').trim();
+};
+
+const UTM_STORAGE_KEY = 'safe_lead_utm_v1';
+const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+
+const readStoredUtmData = () => {
+  try {
+    const rawValue = window.localStorage.getItem(UTM_STORAGE_KEY);
+    if (!rawValue) {
+      return {};
+    }
+
+    const parsedValue = JSON.parse(rawValue);
+    if (!parsedValue || typeof parsedValue !== 'object' || Array.isArray(parsedValue)) {
+      return {};
+    }
+
+    return UTM_KEYS.reduce((accumulator, key) => {
+      const normalizedValue = normalizeLeadValue(parsedValue[key]);
+      if (normalizedValue) {
+        accumulator[key] = normalizedValue.slice(0, 200);
+      }
+      return accumulator;
+    }, {});
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredUtmData = (utmData) => {
+  try {
+    window.localStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(utmData));
+  } catch {
+    // Ignore storage access errors.
+  }
+};
+
+const collectUtmDataForLead = () => {
+  const queryParams = new URLSearchParams(window.location.search || '');
+  const currentUtmData = {};
+
+  UTM_KEYS.forEach((key) => {
+    const normalizedValue = normalizeLeadValue(queryParams.get(key));
+    if (normalizedValue) {
+      currentUtmData[key] = normalizedValue.slice(0, 200);
+    }
+  });
+
+  const storedUtmData = readStoredUtmData();
+  const mergedUtmData = { ...storedUtmData, ...currentUtmData };
+
+  if (Object.keys(currentUtmData).length > 0) {
+    writeStoredUtmData(mergedUtmData);
+  }
+
+  return mergedUtmData;
+};
 
 const redirectLegacyHtmlPath = () => {
   const pathname = window.location.pathname || '/';
@@ -402,7 +464,8 @@ const buildLeadPayload = ({ name, contact, message }) => ({
   pageTitle: document.title,
   pageUrl: window.location.href,
   createdAt: new Date().toISOString(),
-  userAgent: navigator.userAgent
+  userAgent: navigator.userAgent,
+  utm: collectUtmDataForLead()
 });
 
 const buildLeadMessage = (payload) => {
@@ -417,6 +480,21 @@ const buildLeadMessage = (payload) => {
     `URL: ${payload.pageUrl}`,
     `Дата: ${new Date(payload.createdAt).toLocaleString('ru-RU')}`
   ];
+
+  const utmLines = UTM_KEYS.map((key) => {
+    if (!payload.utm || typeof payload.utm !== 'object') {
+      return '';
+    }
+
+    const normalizedValue = normalizeLeadValue(payload.utm[key]);
+    return normalizedValue ? `${key}: ${normalizedValue}` : '';
+  }).filter(Boolean);
+
+  if (utmLines.length > 0) {
+    lines.push('');
+    lines.push('UTM-метки:');
+    lines.push(...utmLines);
+  }
 
   return lines.join('\n');
 };
@@ -523,6 +601,47 @@ const deliverLead = async (payload) => {
   }
 
   sendLeadToOperatorLink(message, leadConfig.operatorLink || SITE_CONFIG.contactModal?.operatorTelegram?.href);
+};
+
+const initThankYouPageRedirect = () => {
+  const thankYouSection = document.querySelector('.thank-you-page');
+  if (!thankYouSection) {
+    return;
+  }
+
+  const preferredRedirect = normalizeLeadValue(thankYouSection.getAttribute('data-thank-you-redirect'));
+  const configRedirect = normalizeLeadValue(
+    getLeadFormConfig().operatorLink || SITE_CONFIG.contactModal?.operatorTelegram?.href || ''
+  );
+  const redirectCandidate = preferredRedirect || configRedirect;
+
+  if (!redirectCandidate) {
+    return;
+  }
+
+  let redirectUrl = '';
+  try {
+    redirectUrl = new URL(redirectCandidate, window.location.origin).toString();
+  } catch {
+    return;
+  }
+
+  const redirectDelayFromMarkup = Number.parseInt(
+    thankYouSection.getAttribute('data-thank-you-redirect-delay-ms') || '2000',
+    10
+  );
+  const redirectDelayMs = Number.isFinite(redirectDelayFromMarkup)
+    ? Math.max(0, redirectDelayFromMarkup)
+    : 2000;
+
+  const statusNode = thankYouSection.querySelector('[data-thank-you-redirect-status]');
+  if (statusNode && !statusNode.textContent.trim()) {
+    statusNode.textContent = 'Через 2 секунды автоматически откроем диалог в Telegram.';
+  }
+
+  window.setTimeout(() => {
+    window.location.assign(redirectUrl);
+  }, redirectDelayMs);
 };
 
 const initNavigation = () => {
@@ -787,10 +906,12 @@ sanitizeMarTrustLinksInMenu();
 syncProcessSections();
 rewriteInternalHtmlLinks();
 normalizeContactTriggers();
+collectUtmDataForLead();
 
 const navState = initNavigation();
 const modalState = initContactModal();
 initCookieConsent();
+initThankYouPageRedirect();
 
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') {

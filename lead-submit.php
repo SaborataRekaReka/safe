@@ -44,6 +44,25 @@ function truncateUtf8($value, $maxLength)
     return substr($value, 0, $maxLength);
 }
 
+function normalizeUtmData($value)
+{
+    $utmKeys = array('utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id');
+    $normalizedUtm = array();
+
+    if (!is_array($value)) {
+        return $normalizedUtm;
+    }
+
+    foreach ($utmKeys as $utmKey) {
+        $utmValue = normalizeValue(isset($value[$utmKey]) ? $value[$utmKey] : '');
+        if ($utmValue !== '') {
+            $normalizedUtm[$utmKey] = truncateUtf8($utmValue, 200);
+        }
+    }
+
+    return $normalizedUtm;
+}
+
 function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIps = array())
 {
     $result = array(
@@ -231,6 +250,10 @@ $message = normalizeValue(isset($payload['message']) ? $payload['message'] : '')
 $pageTitle = normalizeValue(isset($payload['pageTitle']) ? $payload['pageTitle'] : '');
 $pageUrl = normalizeValue(isset($payload['pageUrl']) ? $payload['pageUrl'] : '');
 $createdAt = normalizeValue(isset($payload['createdAt']) ? $payload['createdAt'] : '');
+$utmData = normalizeUtmData(isset($payload['utm']) ? $payload['utm'] : array());
+if (empty($utmData)) {
+    $utmData = normalizeUtmData($payload);
+}
 
 if (stringLength($name) < 2) {
     respond(422, array('ok' => false, 'error' => 'invalid_name'));
@@ -295,6 +318,15 @@ if ($pageUrl !== '') {
 
 if ($createdAt !== '') {
     $messageLines[] = 'Дата: ' . $createdAt;
+}
+
+if (!empty($utmData)) {
+    $messageLines[] = '';
+    $messageLines[] = 'UTM-метки:';
+
+    foreach ($utmData as $utmKey => $utmValue) {
+        $messageLines[] = $utmKey . ': ' . $utmValue;
+    }
 }
 
 $telegramText = implode("\n", $messageLines);
