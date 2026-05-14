@@ -2048,6 +2048,11 @@ body {
   white-space: normal;
 }
 
+.seo-article__summary-btn {
+  --btn-font-size: 14px;
+  --btn-padding-inline: 42px;
+}
+
 .page--legal,
 .page--thank-you {
   background:
@@ -2608,6 +2613,10 @@ body {
   .seo-article__section p,
   .seo-article__section li {
     font-size: 17px;
+  }
+
+  .seo-article__summary-btn {
+    --btn-font-size: 13px;
   }
 
   .seo-article__section h2 {
@@ -3304,6 +3313,10 @@ body {
   .seo-article__cta-wrap .btn {
     width: 100%;
     max-width: 360px;
+  }
+
+  .seo-article__summary-btn {
+    --btn-font-size: 13px;
   }
 
   /* Global mobile centering across all pages */
