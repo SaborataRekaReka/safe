@@ -2001,6 +2001,17 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.seo-article__section--intro + .seo-article__section {
+  margin-top: 40px;
+  padding-top: 40px;
+}
+
+/* Fallback for cached older markup where the heading follows list in the same block. */
+.seo-article__section ul + h2,
+.seo-article__section ol + h2 {
+  margin-top: 38px;
+}
+
 .seo-article__section h2 {
   margin: 0;
   color: #fff;
@@ -2015,6 +2026,23 @@ body {
   font-size: 25px;
   line-height: 1.3;
   font-weight: 700;
+}
+
+/* Fallback for older article layout: align points 1-2 visual level with 3-5. */
+#methods > h3 {
+  margin: 34px 0 0;
+  padding-top: 34px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 34px;
+  line-height: 1.24;
+  font-weight: 700;
+}
+
+#methods > h3:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .seo-article__section p,
@@ -2625,6 +2653,10 @@ body {
 
   .seo-article__section h3 {
     font-size: 24px;
+  }
+
+  #methods > h3 {
+    font-size: 31px;
   }
 }
 
@@ -3289,6 +3321,11 @@ body {
     padding-top: 24px;
   }
 
+  .seo-article__section--intro + .seo-article__section {
+    margin-top: 28px;
+    padding-top: 28px;
+  }
+
   .seo-article__section h2 {
     font-size: 28px;
   }
@@ -3296,6 +3333,12 @@ body {
   .seo-article__section h3 {
     margin-top: 18px;
     font-size: 22px;
+  }
+
+  #methods > h3 {
+    margin-top: 24px;
+    padding-top: 24px;
+    font-size: 28px;
   }
 
   .seo-article__section p,
