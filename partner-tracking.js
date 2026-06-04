@@ -14,7 +14,7 @@
     COOKIE_KEY: 'partner_code',
     COOKIE_MAX_AGE_DAYS: 30,
     BOTHELP_URL_PREFIX: 'https://r.bothelp.io/tg?',
-    DEFAULT_BOTHELP_LINK: 'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds',
+    DEFAULT_BOTHELP_LINK: 'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds',
     AUTO_REDIRECT_TO_BOT: true,
     MAX_PARTNER_CODE_LENGTH: 100,
     AUTO_REDIRECT_DELAY_MS: 500

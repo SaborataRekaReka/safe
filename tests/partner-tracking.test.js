@@ -82,20 +82,20 @@ test('resolvePartnerCode uses cookie when storage empty', () => {
 
 test('appendPartnerCodeToBotHelpUrl adds partner_code and preserves params', () => {
   const result = tracking.appendPartnerCodeToBotHelpUrl(
-    'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds&utm_source=ads',
+    'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds&utm_source=ads',
     'abc 123'
   );
 
   const parsed = new URL(result);
-  assert.equal(parsed.searchParams.get('domain'), 'safe_exchange_money_bot');
-  assert.equal(parsed.searchParams.get('start'), 'c1774877924856-ds');
+  assert.equal(parsed.searchParams.get('domain'), 'ExchSafe_bot');
+  assert.equal(parsed.searchParams.get('start'), 'c1779906106435-ds');
   assert.equal(parsed.searchParams.get('utm_source'), 'ads');
   assert.equal(parsed.searchParams.get('partner_code'), 'abc 123');
 });
 
 test('appendPartnerCodeToBotHelpUrl replaces existing partner_code', () => {
   const result = tracking.appendPartnerCodeToBotHelpUrl(
-    'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds&partner_code=old',
+    'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds&partner_code=old',
     'new'
   );
 

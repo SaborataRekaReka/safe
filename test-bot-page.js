@@ -6,7 +6,7 @@
   var REDIRECT_DELAY_MS = REDIRECT_DELAY_SECONDS * 1000;
   var TIMER_RING_LENGTH = 314.1592653589793;
   var FALLBACK_BOT_LINK =
-    'https://r.bothelp.io/tg?domain=safe_exchange_money_bot&start=c1774877924856-ds';
+    'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds';
 
   var state = {
     modal: null,
