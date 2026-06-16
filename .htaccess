@@ -1,5 +1,8 @@
 RewriteEngine On
 
+# Keep Yandex verification files accessible by exact .html URL.
+RewriteRule ^yandex_[A-Za-z0-9]+\.html$ - [L,NC]
+
 # Block direct access to server-side lead secrets.
 <Files ".lead-secrets.php">
 	<IfModule mod_authz_core.c>
