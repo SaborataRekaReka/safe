@@ -63,14 +63,15 @@ function normalizeUtmData($value)
     return $normalizedUtm;
 }
 
-function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIps = array())
+function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIps = array(), $allowMigrateRetry = true)
 {
     $result = array(
         'ok' => false,
         'error' => 'unknown_telegram_error',
         'status' => 0,
         'description' => '',
-        'resolve_ip' => ''
+        'resolve_ip' => '',
+        'migrate_to_chat_id' => ''
     );
 
     $endpoint = 'https://api.telegram.org/bot' . rawurlencode($token) . '/sendMessage';
@@ -158,12 +159,31 @@ function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIp
                 return array('ok' => true);
             }
 
+            $description = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
+            if ($description === '') {
+                $description = 'telegram_rejected_request';
+            }
+
+            $migrateToChatId = '';
+            if (isset($decoded['parameters']) && is_array($decoded['parameters'])) {
+                $migrateToChatId = normalizeValue(
+                    isset($decoded['parameters']['migrate_to_chat_id']) ? (string) $decoded['parameters']['migrate_to_chat_id'] : ''
+                );
+            }
+
+            if (
+                $allowMigrateRetry &&
+                $migrateToChatId !== '' &&
+                strcasecmp($migrateToChatId, normalizeValue((string) $chatId)) !== 0 &&
+                stripos($description, 'group chat was upgraded to a supergroup chat') !== false
+            ) {
+                return sendToTelegramApi($token, $migrateToChatId, $text, $proxy, $resolveIps, false);
+            }
+
             $result['error'] = 'telegram_api_error';
             $result['status'] = isset($decoded['error_code']) ? (int) $decoded['error_code'] : $statusCode;
-            $result['description'] = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
-            if ($result['description'] === '') {
-                $result['description'] = 'telegram_rejected_request';
-            }
+            $result['description'] = $description;
+            $result['migrate_to_chat_id'] = $migrateToChatId;
 
             return $result;
         }
@@ -210,12 +230,31 @@ function sendToTelegramApi($token, $chatId, $text, $proxy = '', array $resolveIp
         return array('ok' => true);
     }
 
+    $description = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
+    if ($description === '') {
+        $description = 'telegram_rejected_request';
+    }
+
+    $migrateToChatId = '';
+    if (isset($decoded['parameters']) && is_array($decoded['parameters'])) {
+        $migrateToChatId = normalizeValue(
+            isset($decoded['parameters']['migrate_to_chat_id']) ? (string) $decoded['parameters']['migrate_to_chat_id'] : ''
+        );
+    }
+
+    if (
+        $allowMigrateRetry &&
+        $migrateToChatId !== '' &&
+        strcasecmp($migrateToChatId, normalizeValue((string) $chatId)) !== 0 &&
+        stripos($description, 'group chat was upgraded to a supergroup chat') !== false
+    ) {
+        return sendToTelegramApi($token, $migrateToChatId, $text, $proxy, $resolveIps, false);
+    }
+
     $result['error'] = 'telegram_api_error';
     $result['status'] = isset($decoded['error_code']) ? (int) $decoded['error_code'] : $statusCode;
-    $result['description'] = normalizeValue(isset($decoded['description']) ? $decoded['description'] : '');
-    if ($result['description'] === '') {
-        $result['description'] = 'telegram_rejected_request';
-    }
+    $result['description'] = $description;
+    $result['migrate_to_chat_id'] = $migrateToChatId;
 
     return $result;
 }
@@ -344,7 +383,8 @@ if (empty($telegramResult['ok'])) {
         'error' => isset($telegramResult['error']) ? $telegramResult['error'] : 'unknown_telegram_error',
         'status' => isset($telegramResult['status']) ? (int) $telegramResult['status'] : 0,
         'description' => isset($telegramResult['description']) ? (string) $telegramResult['description'] : '',
-        'resolveIp' => isset($telegramResult['resolve_ip']) ? (string) $telegramResult['resolve_ip'] : ''
+        'resolveIp' => isset($telegramResult['resolve_ip']) ? (string) $telegramResult['resolve_ip'] : '',
+        'migrateToChatId' => isset($telegramResult['migrate_to_chat_id']) ? (string) $telegramResult['migrate_to_chat_id'] : ''
     );
 
     respond(200, array('ok' => false, 'error' => 'telegram_send_failed', 'detail' => $errorDetail));

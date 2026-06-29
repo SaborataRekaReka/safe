@@ -255,31 +255,36 @@
         var statusNode = document.querySelector('[data-go-bot-status]');
         var ctaNode = document.querySelector('[data-go-bot-link]');
 
-        var resolvedPartnerCode = resolvePartnerCodeFromUrl();
-        var partnerCodeSource = resolvedPartnerCode ? 'url' : 'none';
+        var resolvedPartnerCode = null;
+        var partnerCodeSource = 'none';
 
-        if (!resolvedPartnerCode) {
-          resolvedPartnerCode = resolvePartnerCodeFromReferrer();
+        try {
+          resolvedPartnerCode = sanitizeCode(window.localStorage.getItem(STORAGE_KEY));
           if (resolvedPartnerCode) {
-            partnerCodeSource = 'referrer';
+            partnerCodeSource = 'storage';
           }
-        }
-
-        if (!resolvedPartnerCode) {
-          try {
-            resolvedPartnerCode = sanitizeCode(window.localStorage.getItem(STORAGE_KEY));
-            if (resolvedPartnerCode) {
-              partnerCodeSource = 'storage';
-            }
-          } catch (_error) {
-            resolvedPartnerCode = null;
-          }
+        } catch (_error) {
+          resolvedPartnerCode = null;
         }
 
         if (!resolvedPartnerCode) {
           resolvedPartnerCode = sanitizeCode(readCookieValue(COOKIE_KEY));
           if (resolvedPartnerCode) {
             partnerCodeSource = 'cookie';
+          }
+        }
+
+        if (!resolvedPartnerCode) {
+          resolvedPartnerCode = resolvePartnerCodeFromUrl();
+          if (resolvedPartnerCode) {
+            partnerCodeSource = 'url';
+          }
+        }
+
+        if (!resolvedPartnerCode) {
+          resolvedPartnerCode = resolvePartnerCodeFromReferrer();
+          if (resolvedPartnerCode) {
+            partnerCodeSource = 'referrer';
           }
         }
 

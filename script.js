@@ -820,6 +820,10 @@ const initContactModal = () => {
             errorDetails && typeof errorDetails === 'object' ? String(errorDetails.error || '') : '';
           const detailDescription =
             errorDetails && typeof errorDetails === 'object' ? String(errorDetails.description || '') : '';
+          const migratedChatId =
+            errorDetails && typeof errorDetails === 'object'
+              ? String(errorDetails.migrateToChatId || '')
+              : '';
 
           if (detailError === 'curl_transport_error' || detailError === 'stream_transport_error') {
             setStatus(
@@ -828,6 +832,15 @@ const initContactModal = () => {
             );
           } else if (detailDescription.toLowerCase().includes('chat not found')) {
             setStatus('Telegram вернул chat not found. Проверьте chat id и что бот добавлен в нужный чат.', true);
+          } else if (detailDescription.toLowerCase().includes('group chat was upgraded to a supergroup chat')) {
+            if (migratedChatId) {
+              setStatus(
+                `Чат Telegram переведен в supergroup. Обновите TELEGRAM_CHAT_ID на ${migratedChatId}.`,
+                true
+              );
+            } else {
+              setStatus('Чат Telegram переведен в supergroup. Обновите TELEGRAM_CHAT_ID на новый формат -100....', true);
+            }
           } else {
             setStatus('Не удалось доставить заявку в Telegram. Проверьте chat id и что бот имеет доступ к чату.', true);
           }

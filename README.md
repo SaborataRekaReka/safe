@@ -117,12 +117,12 @@
 
 Передавать partner_code из партнерской ссылки в карточку подписчика BotHelp при переходе в Telegram-бота.
 
-### Приоритет источников partner_code
+### Приоритет источников partner_code (first touch)
 
-1. partner_code из URL
-2. a_aid из URL (нормализуется в partner_code)
-3. localStorage
-4. cookie
+1. Если partner_code уже сохранен в localStorage/cookie, он сохраняется и не перезаписывается
+2. Если сохраненного значения нет, берется partner_code из URL
+3. Если partner_code нет, берется a_aid из URL (нормализуется в partner_code)
+4. Если URL не содержит кодов, используется localStorage/cookie
 
 ### Поток обработки
 

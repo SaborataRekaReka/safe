@@ -13,6 +13,7 @@
     STORAGE_KEY: 'partner_code',
     COOKIE_KEY: 'partner_code',
     COOKIE_MAX_AGE_DAYS: 30,
+    PRESERVE_FIRST_PARTNER_CODE: true,
     BOTHELP_URL_PREFIX: 'https://r.bothelp.io/tg?',
     DEFAULT_BOTHELP_LINK: 'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds',
     AUTO_REDIRECT_TO_BOT: true,
@@ -279,15 +280,21 @@
   }
 
   function resolvePartnerCode(options) {
+    var config = getConfig();
     var searchValue = options && typeof options.search === 'string' ? options.search : undefined;
+    var storedPartnerCode = getStoredPartnerCode(options);
     var urlPartnerCode = getPartnerCodeFromUrl(searchValue);
 
     if (urlPartnerCode) {
+      if (config.PRESERVE_FIRST_PARTNER_CODE && storedPartnerCode) {
+        return storedPartnerCode;
+      }
+
       savePartnerCode(urlPartnerCode, options);
       return urlPartnerCode;
     }
 
-    return getStoredPartnerCode(options);
+    return storedPartnerCode;
   }
 
   function isBotHelpRedirectUrl(url) {

@@ -39,7 +39,7 @@ test('getPartnerCodeFromUrl ignores empty values', () => {
   assert.equal(value, null);
 });
 
-test('resolvePartnerCode priority: url over storage and cookie', () => {
+test('resolvePartnerCode preserves first partner_code when already stored', () => {
   const storage = createStorage({ partner_code: 'stored' });
   const writes = [];
 
@@ -47,6 +47,22 @@ test('resolvePartnerCode priority: url over storage and cookie', () => {
     search: '?partner_code=fresh-code',
     storage,
     cookieString: 'partner_code=cookie-value',
+    cookieWriter: (key, cookieValue) => writes.push([key, cookieValue])
+  });
+
+  assert.equal(value, 'stored');
+  assert.equal(storage.getItem('partner_code'), 'stored');
+  assert.equal(writes.length, 0);
+});
+
+test('resolvePartnerCode saves url code when nothing is stored yet', () => {
+  const storage = createStorage();
+  const writes = [];
+
+  const value = tracking.resolvePartnerCode({
+    search: '?partner_code=fresh-code',
+    storage,
+    cookieString: '',
     cookieWriter: (key, cookieValue) => writes.push([key, cookieValue])
   });
 
