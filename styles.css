@@ -2069,16 +2069,74 @@ body {
   row-gap: 10px;
 }
 
+.seo-article__quote-layout {
+  margin: 22px 0 0;
+  width: min(860px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(220px, 1fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
 .seo-article__quote {
-  margin: 18px 0 0;
-  padding: 14px 16px;
-  border-left: 4px solid #61c0be;
-  border-radius: 10px;
-  background: rgba(97, 192, 190, 0.12);
+  margin: 0;
+  position: relative;
+  padding: 24px 22px 22px 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(165deg, rgba(5, 16, 58, 0.92), rgba(2, 11, 40, 0.86));
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.26);
+}
+
+.seo-article__quote-mark {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 64px;
+  line-height: 0.8;
+  pointer-events: none;
+}
+
+.seo-article__quote p {
+  margin: 0;
+  padding-left: 20px;
   color: #fff;
-  font-size: 20px;
-  line-height: 1.5;
+  font-size: clamp(30px, 3vw, 44px);
+  line-height: 1.14;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.seo-article__quote-answer {
+  margin: 0;
+  padding: 16px 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 22, 74, 0.58);
+}
+
+.seo-article__quote-answer-title {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   font-weight: 600;
+}
+
+.seo-article__quote-answer p {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.seo-article__quote-answer .seo-article__quote-answer-title + p {
+  margin-top: 10px;
 }
 
 .seo-article__section--summary {
@@ -3392,11 +3450,41 @@ body {
     row-gap: 8px;
   }
 
+  .seo-article__quote-layout {
+    margin-top: 16px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .seo-article__quote {
-    margin-top: 14px;
-    padding: 12px 14px;
-    font-size: 17px;
-    line-height: 1.5;
+    padding: 16px 14px 14px 14px;
+    border-radius: 12px;
+  }
+
+  .seo-article__quote-mark {
+    top: 6px;
+    left: 8px;
+    font-size: 44px;
+  }
+
+  .seo-article__quote p {
+    padding-left: 14px;
+    font-size: clamp(26px, 8.4vw, 34px);
+    line-height: 1.16;
+  }
+
+  .seo-article__quote-answer {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .seo-article__quote-answer-title {
+    font-size: 11px;
+  }
+
+  .seo-article__quote-answer p {
+    font-size: 15px;
+    line-height: 1.45;
   }
 
   .seo-article__cta-wrap .btn {
