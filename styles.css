@@ -1425,6 +1425,19 @@ body {
   color: #90f0bf;
 }
 
+.contact-form__fallback {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.contact-form__fallback a {
+  color: #fff;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .contact-form__submit {
   justify-self: start;
 }

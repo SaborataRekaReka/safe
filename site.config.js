@@ -3,11 +3,13 @@ window.SAFE_SITE_CONFIG = {
     { href: "/seamen", label: "Услуги для моряков" },
     { href: "/shipmoney", label: "Вывод средств с Shipmoney" },
     { href: "/kadmos", label: "Вывод средств с Kadmos" },
+    { href: "/martrust", label: "Вывод средств с Мартраст" },
     { href: "/company", label: "Вывод средств от компании" }
   ],
   footerLinks: [
     { href: "/shipmoney", label: "Вывод с Shipmoney" },
     { href: "/kadmos", label: "Вывод с Kadmos" },
+    { href: "/martrust", label: "Вывод с Мартраст" },
     { href: "/company", label: "Вывод с компании" }
   ],
   legalLinks: [
@@ -20,7 +22,7 @@ window.SAFE_SITE_CONFIG = {
     title: "Оставьте заявку",
     description: "Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.",
     submitLabel: "Отправить заявку",
-    operatorTelegram: { href: "https://t.me/Danil_Berdykin", label: "@Danil_Berdykin" }
+    operatorTelegram: { href: "https://telegram.me/Danil_Berdykin", label: "@Danil_Berdykin" }
   },
   legalPages: {
     privacy: "/privacy-policy",
@@ -34,7 +36,7 @@ window.SAFE_SITE_CONFIG = {
     telegramWebhookUrl: "",
     telegramBotToken: "",
     telegramChatId: "",
-    operatorLink: "https://t.me/Danil_Berdykin"
+    operatorLink: "https://telegram.me/Danil_Berdykin"
   },
   cookieConsent: {
     storageKey: "safe_cookie_consent_v1"

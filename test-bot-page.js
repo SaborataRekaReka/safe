@@ -7,6 +7,7 @@
   var TIMER_RING_LENGTH = 314.1592653589793;
   var FALLBACK_BOT_LINK =
     'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds';
+  var TELEGRAM_SHORT_HOSTS = ['t.me', 'www.t.me', 'telegram.me', 'www.telegram.me'];
 
   var state = {
     modal: null,
@@ -28,6 +29,14 @@
     return String(pathname).replace(/^\/+/, '').replace(/^@/, '').toLowerCase();
   }
 
+  function isTelegramShortHost(hostname) {
+    if (!hostname) {
+      return false;
+    }
+
+    return TELEGRAM_SHORT_HOSTS.indexOf(String(hostname).toLowerCase()) >= 0;
+  }
+
   function isOperatorChatHref(rawHref) {
     if (!rawHref) {
       return false;
@@ -40,7 +49,7 @@
       return false;
     }
 
-    if (parsedUrl.hostname.toLowerCase() !== 't.me') {
+    if (!isTelegramShortHost(parsedUrl.hostname)) {
       return false;
     }
 

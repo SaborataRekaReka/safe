@@ -3,11 +3,13 @@ const DEFAULT_SITE_CONFIG = {
     { href: '/seamen', label: 'Услуги для моряков' },
     { href: '/shipmoney', label: 'Вывод средств с Shipmoney' },
     { href: '/kadmos', label: 'Вывод средств с Kadmos' },
+    { href: '/martrust', label: 'Вывод средств с Мартраст' },
     { href: '/company', label: 'Вывод средств от компании' }
   ],
   footerLinks: [
     { href: '/shipmoney', label: 'Вывод с Shipmoney' },
     { href: '/kadmos', label: 'Вывод с Kadmos' },
+    { href: '/martrust', label: 'Вывод с Мартраст' },
     { href: '/company', label: 'Вывод с компании' }
   ],
   legalLinks: [
@@ -26,7 +28,7 @@ const DEFAULT_SITE_CONFIG = {
     title: 'Оставьте заявку',
     description: 'Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.',
     submitLabel: 'Отправить заявку',
-    operatorTelegram: { href: 'https://t.me/Danil_Berdykin', label: '@Danil_Berdykin' }
+    operatorTelegram: { href: 'https://telegram.me/Danil_Berdykin', label: '@Danil_Berdykin' }
   },
   leadForm: {
     successUrl: '/thank-you',
@@ -34,7 +36,7 @@ const DEFAULT_SITE_CONFIG = {
     telegramWebhookUrl: '',
     telegramBotToken: '',
     telegramChatId: '',
-    operatorLink: 'https://t.me/Danil_Berdykin'
+    operatorLink: 'https://telegram.me/Danil_Berdykin'
   },
   cookieConsent: {
     storageKey: 'safe_cookie_consent_v1'
@@ -107,6 +109,15 @@ const normalizeLeadValue = (value = '') => {
 
 const UTM_STORAGE_KEY = 'safe_lead_utm_v1';
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id'];
+const TELEGRAM_SHORT_HOSTS = new Set(['t.me', 'www.t.me', 'telegram.me', 'www.telegram.me']);
+const MARTRAST_ROUTE = '/martrust';
+const MARTRAST_MENU_LABEL = 'Вывод средств с Мартраст';
+const MARTRAST_FOOTER_LABEL = 'Вывод с Мартраст';
+const RATES_AND_TERMS_LABEL = 'Условия и курсы';
+const RATES_AND_TERMS_COPY =
+  'Актуальные курсы и условия можно уточнить у оператора. Мы готовы ответить на все вопросы и помочь с любым переводом. Оставляйте заявку, чтобы перейти в чат с оператором!';
+
+const isTelegramShortHost = (hostname = '') => TELEGRAM_SHORT_HOSTS.has(String(hostname).toLowerCase());
 
 const readStoredUtmData = () => {
   try {
@@ -175,21 +186,6 @@ const redirectLegacyHtmlPath = () => {
 
 redirectLegacyHtmlPath();
 
-const isMarTrustLink = (href = '') => {
-  if (!href) {
-    return false;
-  }
-
-  try {
-    const resolvedUrl = new URL(href, window.location.origin);
-    const pathname = resolvedUrl.pathname.toLowerCase();
-    return pathname.endsWith('/martrust.html') || pathname.endsWith('/martrust');
-  } catch {
-    const normalizedHref = String(href).toLowerCase();
-    return normalizedHref.includes('martrust.html') || /\/martrust(?:$|[?#/])/.test(normalizedHref);
-  }
-};
-
 const getTelegramUsername = (rawHref = '') => {
   if (!rawHref) {
     return '';
@@ -202,12 +198,35 @@ const getTelegramUsername = (rawHref = '') => {
     return '';
   }
 
-  if (resolvedUrl.hostname.toLowerCase() !== 't.me') {
+  if (!isTelegramShortHost(resolvedUrl.hostname)) {
     return '';
   }
 
   const pathname = resolvedUrl.pathname.replace(/^\/+/, '');
   return pathname.replace(/^@/, '').toLowerCase();
+};
+
+const normalizeTelegramShortLinks = () => {
+  document.querySelectorAll('a[href]').forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      return;
+    }
+
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(href, window.location.origin);
+    } catch {
+      return;
+    }
+
+    if (!isTelegramShortHost(parsedUrl.hostname)) {
+      return;
+    }
+
+    parsedUrl.hostname = 'telegram.me';
+    link.setAttribute('href', parsedUrl.toString());
+  });
 };
 
 const getOperatorUsernames = () => {
@@ -236,8 +255,8 @@ const isOperatorTelegramHref = (rawHref = '') => {
   return username ? OPERATOR_USERNAMES.has(username) : false;
 };
 
-const SEAMEN_MENU_LINKS = SITE_CONFIG.seamenMenuLinks.filter((item) => !isMarTrustLink(item.href));
-const FOOTER_LINKS = SITE_CONFIG.footerLinks.filter((item) => !isMarTrustLink(item.href));
+const SEAMEN_MENU_LINKS = Array.isArray(SITE_CONFIG.seamenMenuLinks) ? SITE_CONFIG.seamenMenuLinks : [];
+const FOOTER_LINKS = Array.isArray(SITE_CONFIG.footerLinks) ? SITE_CONFIG.footerLinks : [];
 const LEGAL_LINKS = Array.isArray(SITE_CONFIG.legalLinks) ? SITE_CONFIG.legalLinks : [];
 
 const CURRENT_PATH = normalizeRoutePath(window.location.pathname);
@@ -277,6 +296,161 @@ const renderFooter = () => {
 
   document.querySelectorAll('.site-footer__menu ul').forEach((list) => {
     list.innerHTML = FOOTER_LINKS.map((item) => `<li><a href="${toCleanPath(item.href)}">${item.label}</a></li>`).join('');
+  });
+};
+
+const findMenuLinkByPath = (scope, pathValue) => {
+  if (!scope || !pathValue) {
+    return null;
+  }
+
+  const expectedPath = normalizeRoutePath(pathValue);
+  const links = scope.querySelectorAll('a[href]');
+
+  for (let index = 0; index < links.length; index += 1) {
+    const href = links[index].getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+      continue;
+    }
+
+    if (normalizeRoutePath(href) === expectedPath) {
+      return links[index];
+    }
+  }
+
+  return null;
+};
+
+const ensureServiceNavigationLinks = () => {
+  document.querySelectorAll('.main-nav__submenu').forEach((submenu) => {
+    if (findMenuLinkByPath(submenu, MARTRAST_ROUTE)) {
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.className = 'main-nav__submenu-link';
+    link.setAttribute('href', MARTRAST_ROUTE);
+    link.textContent = MARTRAST_MENU_LABEL;
+
+    const companyLink = findMenuLinkByPath(submenu, '/company');
+    if (companyLink && companyLink.parentNode) {
+      companyLink.parentNode.insertBefore(link, companyLink);
+      return;
+    }
+
+    submenu.append(link);
+  });
+
+  document.querySelectorAll('.site-footer__menu').forEach((footerMenu) => {
+    if (findMenuLinkByPath(footerMenu, MARTRAST_ROUTE)) {
+      return;
+    }
+
+    const contactLink = footerMenu.querySelector('a[href="#contactform"]');
+    const listWrap = footerMenu.querySelector('ul');
+
+    if (listWrap) {
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.setAttribute('href', MARTRAST_ROUTE);
+      link.textContent = MARTRAST_FOOTER_LABEL;
+      listItem.append(link);
+
+      if (contactLink) {
+        const contactItem = contactLink.closest('li');
+        if (contactItem && contactItem.parentNode) {
+          contactItem.parentNode.insertBefore(listItem, contactItem);
+          return;
+        }
+      }
+
+      listWrap.append(listItem);
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.className = 'site-footer__link';
+    link.setAttribute('href', MARTRAST_ROUTE);
+    link.textContent = MARTRAST_FOOTER_LABEL;
+
+    if (contactLink && contactLink.parentNode) {
+      contactLink.parentNode.insertBefore(link, contactLink);
+      return;
+    }
+
+    footerMenu.append(link);
+  });
+};
+
+const ensureRatesAndTermsLinks = () => {
+  document.querySelectorAll('.main-nav').forEach((mainNav) => {
+    const existingLink = mainNav.querySelector('[data-rates-and-terms-link]');
+    if (existingLink) {
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.className = 'main-nav__link';
+    link.setAttribute('href', '#contactform');
+    link.setAttribute('data-rates-and-terms-link', 'true');
+    link.setAttribute('data-open-contact-modal', '');
+    link.setAttribute('data-contact-modal-description', RATES_AND_TERMS_COPY);
+    link.textContent = RATES_AND_TERMS_LABEL;
+
+    const contactLink = mainNav.querySelector('a.main-nav__link[href="#contactform"]');
+    if (contactLink && contactLink.parentNode) {
+      contactLink.parentNode.insertBefore(link, contactLink);
+      return;
+    }
+
+    mainNav.append(link);
+  });
+
+  document.querySelectorAll('.site-footer__menu').forEach((footerMenu) => {
+    const existingLink = footerMenu.querySelector('[data-rates-and-terms-link]');
+    if (existingLink) {
+      return;
+    }
+
+    const contactLink = footerMenu.querySelector('a[href="#contactform"]');
+    const listWrap = footerMenu.querySelector('ul');
+
+    if (listWrap) {
+      const listItem = document.createElement('li');
+      const link = document.createElement('a');
+      link.setAttribute('href', '#contactform');
+      link.setAttribute('data-rates-and-terms-link', 'true');
+      link.setAttribute('data-open-contact-modal', '');
+      link.setAttribute('data-contact-modal-description', RATES_AND_TERMS_COPY);
+      link.textContent = RATES_AND_TERMS_LABEL;
+      listItem.append(link);
+
+      if (contactLink) {
+        const contactItem = contactLink.closest('li');
+        if (contactItem && contactItem.parentNode) {
+          contactItem.parentNode.insertBefore(listItem, contactItem);
+          return;
+        }
+      }
+
+      listWrap.append(listItem);
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.className = 'site-footer__link';
+    link.setAttribute('href', '#contactform');
+    link.setAttribute('data-rates-and-terms-link', 'true');
+    link.setAttribute('data-open-contact-modal', '');
+    link.setAttribute('data-contact-modal-description', RATES_AND_TERMS_COPY);
+    link.textContent = RATES_AND_TERMS_LABEL;
+
+    if (contactLink && contactLink.parentNode) {
+      contactLink.parentNode.insertBefore(link, contactLink);
+      return;
+    }
+
+    footerMenu.append(link);
   });
 };
 
@@ -320,22 +494,6 @@ const rewriteInternalHtmlLinks = () => {
     const cleanPath = normalizeRoutePath(parsedUrl.pathname);
     const cleanHref = `${cleanPath}${parsedUrl.search || ''}${parsedUrl.hash || ''}`;
     link.setAttribute('href', cleanHref);
-  });
-};
-
-const sanitizeMarTrustLinksInMenu = () => {
-  document.querySelectorAll('.main-nav__submenu a, .site-footer__menu a').forEach((link) => {
-    if (!isMarTrustLink(link.getAttribute('href') || '')) {
-      return;
-    }
-
-    const listItem = link.closest('li');
-    if (listItem) {
-      listItem.remove();
-      return;
-    }
-
-    link.remove();
   });
 };
 
@@ -449,6 +607,10 @@ const createOrSyncContactModal = () => {
           <p class="contact-form__status" data-contact-form-status aria-live="polite"></p>
           <button class="contact-form__submit btn btn--size-cta btn--filled-accent" type="submit">${escapeHtml(submitLabel)}</button>
         </form>
+        <p class="contact-form__fallback">
+          Резервный способ связи с нами:
+          <a href="mailto:ask@safe-fin.com">ask@safe-fin.com</a>
+        </p>
       </div>
     </div>`;
 
@@ -574,7 +736,8 @@ const sendLeadToOperatorLink = (message, operatorLink) => {
   }
 
   const url = new URL(operatorLink, window.location.origin);
-  if (url.hostname.toLowerCase() === 't.me') {
+  if (isTelegramShortHost(url.hostname)) {
+    url.hostname = 'telegram.me';
     url.searchParams.set('text', message);
   }
 
@@ -725,9 +888,15 @@ const initContactModal = () => {
   const contactModal = createOrSyncContactModal();
   const modalCloseTriggers = contactModal.querySelectorAll('[data-contact-modal-close]');
   const modalCloseButton = contactModal.querySelector('.contact-modal__close');
+  const modalTitleNode = contactModal.querySelector('.contact-modal__title');
+  const modalLeadNode = contactModal.querySelector('.contact-modal__lead');
   const contactForm = contactModal.querySelector('[data-contact-form]');
   const statusNode = contactModal.querySelector('[data-contact-form-status]');
   const submitButton = contactModal.querySelector('.contact-form__submit');
+  const defaultModalTitle = modalTitleNode ? modalTitleNode.textContent : 'Оставьте заявку';
+  const defaultModalLead = modalLeadNode
+    ? modalLeadNode.textContent
+    : 'Укажите ваши данные и удобный контакт. Оператор свяжется с вами в ближайшее время.';
 
   const setStatus = (message, isError = false) => {
     if (!statusNode) {
@@ -739,7 +908,21 @@ const initContactModal = () => {
     statusNode.classList.toggle('is-success', !isError && Boolean(message));
   };
 
-  const openContactModal = () => {
+  const applyModalCopy = (triggerNode) => {
+    const customTitle = normalizeLeadValue(triggerNode?.getAttribute('data-contact-modal-title'));
+    const customLead = normalizeLeadValue(triggerNode?.getAttribute('data-contact-modal-description'));
+
+    if (modalTitleNode) {
+      modalTitleNode.textContent = customTitle || defaultModalTitle;
+    }
+
+    if (modalLeadNode) {
+      modalLeadNode.textContent = customLead || defaultModalLead;
+    }
+  };
+
+  const openContactModal = (triggerNode) => {
+    applyModalCopy(triggerNode);
     contactModal.classList.add('is-open');
     contactModal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
@@ -753,13 +936,14 @@ const initContactModal = () => {
     contactModal.classList.remove('is-open');
     contactModal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('modal-open');
+    applyModalCopy(null);
     setStatus('');
   };
 
   modalOpenTriggers.forEach((trigger) => {
     trigger.addEventListener('click', (event) => {
       event.preventDefault();
-      openContactModal();
+      openContactModal(trigger);
     });
   });
 
@@ -914,10 +1098,12 @@ const initCookieConsent = () => {
 renderSeamenSubmenu();
 syncMainNavActiveLink();
 renderFooter();
+ensureServiceNavigationLinks();
+ensureRatesAndTermsLinks();
 renderFooterLegalLinks();
-sanitizeMarTrustLinksInMenu();
 syncProcessSections();
 rewriteInternalHtmlLinks();
+normalizeTelegramShortLinks();
 normalizeContactTriggers();
 collectUtmDataForLead();
 
