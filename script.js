@@ -115,7 +115,7 @@ const MARTRAST_MENU_LABEL = 'Вывод средств с Мартраст';
 const MARTRAST_FOOTER_LABEL = 'Вывод с Мартраст';
 const RATES_AND_TERMS_LABEL = 'Условия и курсы';
 const RATES_AND_TERMS_COPY =
-  'Актуальные курсы и условия можно уточнить у оператора. Мы готовы ответить на все вопросы и помочь с любым переводом. Оставляйте заявку, чтобы перейти в чат с оператором!';
+  'Актуальные курсы и условия можно уточнить у оператора. Мы готовы ответить на все вопросы и помочь с любым переводом.';
 
 const isTelegramShortHost = (hostname = '') => TELEGRAM_SHORT_HOSTS.has(String(hostname).toLowerCase());
 
@@ -608,7 +608,7 @@ const createOrSyncContactModal = () => {
           <button class="contact-form__submit btn btn--size-cta btn--filled-accent" type="submit">${escapeHtml(submitLabel)}</button>
         </form>
         <p class="contact-form__fallback">
-          Резервный способ связи с нами:
+          <span>Резервный способ связи с нами:</span>
           <a href="mailto:ask@safe-fin.com">ask@safe-fin.com</a>
         </p>
       </div>
