@@ -27,7 +27,10 @@ jobs:
           script: |
             set -e
             cd /var/www/fastuser/data/www/safe-fin.com
-            git pull origin main
+            git \
+              --git-dir=/var/www/fastuser/data/git/safe-fin.git \
+              --work-tree=/var/www/fastuser/data/www/safe-fin.com \
+              pull --ff-only origin main
             cat > .lead-secrets.php <<'PHP'
             <?php
             return [
@@ -37,4 +40,4 @@ jobs:
               'telegram_resolve_ip' => '${{ secrets[matrix.resolve_ip_secret_name] }}'
             ];
             PHP
-            chmod 644 .lead-secrets.php
+            chmod 600 .lead-secrets.php
