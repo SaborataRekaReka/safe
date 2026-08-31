@@ -17,7 +17,40 @@ jobs:
             resolve_ip_secret_name: TELEGRAM_RESOLVE_IP
 
     steps:
-      - name: Deploy via SSH
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare deploy package
+        run: |
+          mkdir -p deploy
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.tmp/' \
+            --exclude='deploy/' \
+            --exclude='tests/' \
+            --exclude='not for guthub/' \
+            --exclude='.gitignore' \
+            --exclude='.lead-secrets.php' \
+            --exclude='AGENTS.MD' \
+            --exclude='README.md' \
+            --exclude='lead-secrets.example.php' \
+            --exclude='tmp-shipmoney-old.txt' \
+            ./ deploy/
+
+      - name: Upload site files
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: deploy
+          target: /var/www/fastuser/data/www/safe-fin.com
+          strip_components: 1
+          overwrite: true
+
+      - name: Write server secrets
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -27,10 +60,6 @@ jobs:
           script: |
             set -e
             cd /var/www/fastuser/data/www/safe-fin.com
-            git \
-              --git-dir=/var/www/fastuser/data/git/safe-fin.git \
-              --work-tree=/var/www/fastuser/data/www/safe-fin.com \
-              pull --ff-only origin main
             cat > .lead-secrets.php <<'PHP'
             <?php
             return [
