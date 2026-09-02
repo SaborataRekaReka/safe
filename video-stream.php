@@ -43,14 +43,15 @@ $etag = '"' . sha1($filename . ':' . $fileSize . ':' . $modifiedAt) . '"';
 $lastModified = gmdate('D, d M Y H:i:s', $modifiedAt) . ' GMT';
 
 header_remove('X-Powered-By');
-header('Content-Type: video/mp4');
+// The hosting edge truncates responses advertised as video/mp4. Browsers still
+// detect the MP4 container from the inline filename and the media element.
+header('Content-Type: application/octet-stream');
 header('Content-Disposition: inline; filename="' . $filename . '"');
 header('Accept-Ranges: bytes');
 header('Cache-Control: public, max-age=14400, immutable');
 header('CDN-Cache-Control: public, max-age=2592000, stale-while-revalidate=86400, stale-if-error=604800');
 header('ETag: ' . $etag);
 header('Last-Modified: ' . $lastModified);
-header('X-Content-Type-Options: nosniff');
 
 $ifNoneMatch = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) : '';
 if ($ifNoneMatch !== '' && $ifNoneMatch === $etag && !isset($_SERVER['HTTP_RANGE'])) {
