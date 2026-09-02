@@ -48,6 +48,7 @@ header_remove('X-Powered-By');
 header('Content-Type: application/octet-stream');
 header('Content-Disposition: inline; filename="' . $filename . '"');
 header('Accept-Ranges: bytes');
+header('X-Accel-Buffering: no');
 header('Cache-Control: public, max-age=14400, immutable');
 header('CDN-Cache-Control: public, max-age=2592000, stale-while-revalidate=86400, stale-if-error=604800');
 header('ETag: ' . $etag);
@@ -141,6 +142,7 @@ while ($remaining > 0 && !feof($handle)) {
 
     echo $chunk;
     $remaining -= strlen($chunk);
+    flush();
 }
 
 fclose($handle);
