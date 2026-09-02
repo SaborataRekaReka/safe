@@ -43,9 +43,7 @@ $etag = '"' . sha1($filename . ':' . $fileSize . ':' . $modifiedAt) . '"';
 $lastModified = gmdate('D, d M Y H:i:s', $modifiedAt) . ' GMT';
 
 header_remove('X-Powered-By');
-// The hosting edge truncates responses advertised as video/mp4. Browsers still
-// detect the MP4 container from the inline filename and the media element.
-header('Content-Type: application/octet-stream');
+header('Content-Type: video/mp4');
 header('Content-Disposition: inline; filename="' . $filename . '"');
 header('Accept-Ranges: bytes');
 header('X-Accel-Buffering: no');
