@@ -49,7 +49,57 @@
    <noscript><div><img src="https://mc.yandex.ru/watch/96288338" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
    <!-- /Yandex.Metrika counter -->
 
-    <link rel="stylesheet" href="styles.css?v=20260907-1" />
+    <!-- shared:loading-guard:start -->
+    <style>
+      .site-styles-pending body { margin: 0; padding: 24px; background: #000521; color: #fff; font: 16px/1.5 Arial, sans-serif; }
+      .site-styles-pending * { box-sizing: border-box; }
+      .site-styles-pending a { color: #91dfdd; }
+      .site-styles-pending img, .site-styles-pending video, .site-styles-pending svg { max-width: 100%; height: auto; }
+      .site-styles-pending .page-container { width: 100%; max-width: 1200px; margin: 0 auto; }
+      .site-styles-pending .brand-link__img, .site-styles-pending .site-footer__brand img { width: 160px; }
+      .site-styles-pending .main-nav { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+      .site-styles-pending .main-nav__submenu { display: flex; flex-wrap: wrap; gap: 12px; }
+      .site-styles-pending .hero__glow, .site-styles-pending .hero__sign, .site-styles-pending .menu-toggle { display: none; }
+      .site-styles-pending h1 { font-size: clamp(26px, 5vw, 46px); line-height: 1.2; }
+      .site-styles-pending section { margin: 32px auto; }
+      .site-styles-pending .btn, .site-styles-pending button { display: inline-block; padding: 12px 20px; border: 1px solid currentColor; border-radius: 24px; background: #15586f; color: #fff; font: inherit; cursor: pointer; }
+      .site-styles-pending .contact-modal { display: none; }
+      .site-styles-pending .contact-modal.is-open { display: flex; position: fixed; inset: 0; z-index: 120; align-items: center; justify-content: center; padding: 16px; background: rgba(0, 5, 33, .9); }
+      .site-styles-pending .contact-modal__backdrop { position: absolute; inset: 0; opacity: 0; }
+      .site-styles-pending .contact-modal__dialog { position: relative; width: 100%; max-width: 760px; max-height: 90vh; overflow: auto; padding: 24px; border: 1px solid #91dfdd; background: #000521; }
+      .site-styles-pending .contact-modal__close { float: right; }
+      .site-styles-pending .contact-form__field { display: grid; gap: 6px; margin: 12px 0; }
+      .site-styles-pending input, .site-styles-pending textarea { max-width: 100%; padding: 10px; font: inherit; }
+    </style>
+    <script>
+      (function () {
+        // Start before the stylesheet: a later inline script would also wait for CSS.
+        var root = document.documentElement;
+        function releaseStyles(link) {
+          root.classList.add('site-styles-pending');
+          link.media = 'print';
+        }
+        var deadline = window.setTimeout(function () {
+          var link = document.querySelector('link[data-site-styles]');
+          if (link && !link.sheet) releaseStyles(link);
+        }, 3000);
+        document.addEventListener('load', function (event) {
+          var link = event.target;
+          if (link.nodeName !== 'LINK' || !link.hasAttribute('data-site-styles')) return;
+          window.clearTimeout(deadline);
+          if (link.media === 'print') link.media = 'all';
+          root.classList.remove('site-styles-pending');
+        }, true);
+        document.addEventListener('error', function (event) {
+          var link = event.target;
+          if (link.nodeName !== 'LINK' || !link.hasAttribute('data-site-styles')) return;
+          window.clearTimeout(deadline);
+          releaseStyles(link);
+        }, true);
+      })();
+    </script>
+    <!-- shared:loading-guard:end -->
+    <link rel="stylesheet" data-site-styles href="styles.css?v=20260907-1" />
   </head>
   <body class="page--kadmos">
    <!-- Google Tag Manager (noscript) -->
@@ -543,8 +593,8 @@
     </footer>
     <!-- shared:footer:end -->
 
-    <script src="site.config.js?v=20260420-3"></script>
-    <script src="partner-tracking.js?v=20260409-1"></script>
-    <script src="script.js?v=20260420-3"></script>
+    <script defer src="site.config.js?v=20260420-3"></script>
+    <script defer src="partner-tracking.js?v=20260908-1"></script>
+    <script defer src="script.js?v=20260420-3"></script>
   </body>
 </html>

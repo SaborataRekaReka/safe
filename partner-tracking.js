@@ -147,7 +147,11 @@
       return '';
     }
 
-    return document.cookie || '';
+    try {
+      return document.cookie || '';
+    } catch (_error) {
+      return '';
+    }
   }
 
   function readCookieValue(key, options) {
@@ -200,7 +204,11 @@
 
   function writeCookie(key, value, maxAgeDays, options) {
     if (options && typeof options.cookieWriter === 'function') {
-      options.cookieWriter(key, value, maxAgeDays);
+      try {
+        options.cookieWriter(key, value, maxAgeDays);
+      } catch (_error) {
+        // Cookie persistence must not interrupt the current partner transition.
+      }
       return;
     }
 
@@ -219,11 +227,15 @@
       '; SameSite=Lax' +
       (isSecure ? '; Secure' : '');
 
-    document.cookie = baseCookie;
+    try {
+      document.cookie = baseCookie;
 
-    var rootDomain = getCookieDomain();
-    if (rootDomain) {
-      document.cookie = baseCookie + '; domain=' + rootDomain;
+      var rootDomain = getCookieDomain();
+      if (rootDomain) {
+        document.cookie = baseCookie + '; domain=' + rootDomain;
+      }
+    } catch (_error) {
+      // Restricted webviews may allow neither localStorage nor cookies.
     }
   }
 
