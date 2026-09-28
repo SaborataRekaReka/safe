@@ -7,90 +7,176 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const partnerHtml = fs.readFileSync(path.join(root, 'partner_link.html'), 'utf8');
 const inlineScripts = html => Array.from(html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g), match => match[1]);
-const redirectScript = inlineScripts(partnerHtml).find(script => script.includes('function redirectNow()'));
+const referralScript = inlineScripts(partnerHtml).find(script => script.includes("var API_PATH = '/referral-start.php'"));
 
-function runRedirect({ cookie = '', storageValue = null, blockedRead = false, blockedWrite = false, brokenAnalytics = false, search = '?ref_id=new-partner', referrer = '' } = {}) {
-  const timeouts = [];
+async function runReferralPage({
+  search = '?ref_id=current-partner&click_id=click-17',
+  fetchMode = 'success',
+  responsePayload = {
+    ok: true,
+    code: 'K7M4Q',
+    telegram_url: 'https://t.me/Danil_Berdykin?text=Hello%20K7M4Q'
+  }
+} = {}) {
+  const timers = [];
   const intervals = [];
   const destinations = [];
-  const links = { href: 'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds' };
+  const requests = [];
+  const seconds = [{ textContent: '3' }, { textContent: '3' }];
+  const status = { textContent: '' };
+  const timer = { hidden: true };
+  const countdown = { hidden: true };
+  const ring = { style: {} };
   let elapsed = 0;
+
+  const attributes = { href: 'https://t.me/Danil_Berdykin' };
   const cta = {
-    getAttribute: key => links[key],
-    setAttribute: (key, value) => { links[key] = value; },
+    getAttribute: key => attributes[key],
+    setAttribute: (key, value) => { attributes[key] = String(value); },
+    removeAttribute: key => { delete attributes[key]; },
     addEventListener() {}
   };
   const page = { getAttribute: () => '3000' };
   const document = {
-    referrer,
-    title: 'Переход в Telegram',
-    querySelector: selector => ({ '[data-go-bot-page]': page, '[data-go-bot-link]': cta, '[data-go-bot-status]': { textContent: '' } })[selector] || null,
-    querySelectorAll: () => []
+    querySelector: selector => ({
+      '[data-referral-page]': page,
+      '[data-referral-status]': status,
+      '[data-referral-link]': cta,
+      '[data-partner-link-timer]': timer,
+      '[data-partner-link-countdown]': countdown,
+      '[data-partner-link-ring]': ring
+    })[selector] || null,
+    querySelectorAll: () => seconds
   };
-  Object.defineProperty(document, 'cookie', {
-    get() { if (blockedRead) throw new Error('Cookies disabled'); return cookie; },
-    set() { if (blockedWrite) throw new Error('Cookie writes disabled'); }
-  });
+
+  const href = 'https://safe-fin.com/partner_link' + search;
   const window = {
     document,
-    location: { search, protocol: 'https:', href: 'https://safe-fin.com/partner_link' + search, replace: url => destinations.push(url) },
-    dataLayer: brokenAnalytics ? { push() { throw new Error('Analytics failed'); } } : [],
-    setTimeout: (callback, delay) => { timeouts.push({ callback, delay }); return timeouts.length; },
-    setInterval: callback => { intervals.push(callback); return intervals.length; },
-    clearInterval() {}
-  };
-  Object.defineProperty(window, 'localStorage', {
-    get() {
-      if (blockedRead) throw new Error('Storage disabled');
-      return {
-        getItem: () => storageValue,
-        setItem() { if (blockedWrite) throw new Error('Storage writes disabled'); }
-      };
+    location: {
+      search,
+      href,
+      replace: url => destinations.push(url)
+    },
+    dataLayer: [],
+    setTimeout(callback, delay) {
+      const timerId = timers.length;
+      timers.push({ callback, delay, cleared: false });
+      return timerId;
+    },
+    clearTimeout(timerId) {
+      if (timers[timerId]) timers[timerId].cleared = true;
+    },
+    setInterval(callback) {
+      intervals.push(callback);
+      return intervals.length;
+    },
+    clearInterval() {},
+    fetch(url, options) {
+      requests.push({ url, options });
+      if (fetchMode === 'pending') return new Promise(() => {});
+      if (fetchMode === 'error') return Promise.reject(new Error('Network error'));
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(responsePayload)
+      });
     }
+  };
+
+  vm.runInNewContext(referralScript, {
+    window,
+    document,
+    URL,
+    URLSearchParams,
+    Date: { now: () => elapsed }
   });
-  vm.runInNewContext(redirectScript, {
-    window, document, URL, URLSearchParams,
-    Date: { now: () => elapsed },
-    navigator: { sendBeacon: () => true },
-    // These requests never resolve: neither measurement nor warmup may gate navigation.
-    fetch: () => new Promise(() => {})
-  });
-  assert.equal(destinations.length, 0, 'must preserve the visible countdown');
+
+  await new Promise(resolve => setImmediate(resolve));
+
+  if (fetchMode === 'pending') {
+    const apiTimeout = timers.find(item => item.delay === 5000 && !item.cleared);
+    assert.ok(apiTimeout, 'a stalled API request must have a timeout');
+    apiTimeout.callback();
+  }
+
+  assert.equal(timer.hidden, false, 'countdown starts only after success or a safe fallback is selected');
+  assert.equal(countdown.hidden, false);
+  assert.equal(destinations.length, 0, 'the countdown stays visible before navigation');
+
   elapsed = 3000;
   intervals.forEach(callback => callback());
-  timeouts.sort((a, b) => a.delay - b.delay).forEach(timer => timer.callback());
-  assert.equal(destinations.length, 1, 'interval and fallback timeout must not redirect twice');
-  assert.equal(links.href, destinations[0], 'manual and automatic destinations must agree');
-  const destination = new URL(destinations[0]);
-  assert.equal(destination.searchParams.get('domain'), 'ExchSafe_bot');
-  assert.equal(destination.searchParams.get('start'), 'c1779906106435-ds');
-  return destination.searchParams.get('partner_code');
+  timers
+    .filter(item => item.delay === 3250 && !item.cleared)
+    .forEach(item => item.callback());
+
+  assert.equal(destinations.length, 1, 'interval and fallback timer must not redirect twice');
+  assert.equal(attributes.href, destinations[0], 'manual and automatic destinations must agree');
+
+  return {
+    destination: destinations[0],
+    request: requests[0] || null,
+    requestCount: requests.length,
+    status: status.textContent,
+    dataLayer: window.dataLayer
+  };
 }
 
-test('partner page has no external stylesheet that can block the inline redirect', () => {
-  assert.ok(redirectScript);
+test('partner page is self-contained and no longer references BotHelp', () => {
+  assert.ok(referralScript);
   assert.doesNotMatch(partnerHtml, /<link[^>]+rel=["']stylesheet["']/);
+  assert.doesNotMatch(partnerHtml, /bothelp\.io/i);
+  assert.match(partnerHtml, /href="https:\/\/t\.me\/Danil_Berdykin"/);
 });
 
-test('redirect preserves the URL code when the webview blocks all storage', () => {
-  assert.equal(runRedirect({ blockedRead: true, blockedWrite: true }), 'new-partner');
+test('referral request uses exact current URL values and returned personal Telegram link', async () => {
+  const result = await runReferralPage({
+    search: '?partner_code=stored-is-irrelevant&ref_id=%20exact-ref%20&click_id=click%2F17'
+  });
+  const requestBody = JSON.parse(result.request.options.body);
+
+  assert.equal(result.request.url, '/referral-start.php');
+  assert.equal(requestBody.ref_id, ' exact-ref ');
+  assert.equal(requestBody.click_id, 'click/17');
+  assert.equal(requestBody.page_url, 'https://safe-fin.com/partner_link?partner_code=stored-is-irrelevant&ref_id=%20exact-ref%20&click_id=click%2F17');
+  assert.equal(result.destination, 'https://t.me/Danil_Berdykin?text=Hello%20K7M4Q');
+  assert.match(result.status, /K7M4Q/);
 });
 
-test('redirect survives read-only storage and a failing analytics handler', () => {
-  assert.equal(runRedirect({ blockedWrite: true, brokenAnalytics: true }), 'new-partner');
+test('qa=1 stays on the API request and suppresses page analytics', async () => {
+  const result = await runReferralPage({ search: '?ref_id=partner-7&qa=1' });
+  assert.equal(result.request.url, '/referral-start.php?qa=1');
+  assert.equal(JSON.parse(result.request.options.body).page_url, 'https://safe-fin.com/partner_link?ref_id=partner-7&qa=1');
+  assert.deepEqual(result.dataLayer, []);
 });
 
-test('an unrelated malformed cookie does not erase the first partner or stop navigation', () => {
-  assert.equal(runRedirect({ cookie: 'bad%ZZ=value; partner_code=first-partner' }), 'first-partner');
-  assert.equal(runRedirect({ cookie: 'partner_code=legacy%ZZ' }), 'legacy%ZZ');
+test('missing ref_id skips the API and opens the operator without attribution', async () => {
+  const result = await runReferralPage({ search: '?partner_code=legacy-value' });
+  assert.equal(result.requestCount, 0);
+  assert.equal(result.destination, 'https://t.me/Danil_Berdykin');
+  assert.match(result.status, /нет партнёрской метки/i);
 });
 
-test('first-touch attribution and all existing referral entry points survive the fix', () => {
-  assert.equal(runRedirect({ storageValue: 'original-partner' }), 'original-partner');
-  assert.equal(runRedirect({ search: '?a_aid=affiliate-7' }), 'affiliate-7');
-  assert.equal(runRedirect({ search: '?partner_code=partner%20%26%207' }), 'partner & 7');
-  assert.equal(runRedirect({ search: '', referrer: 'https://partners.safe-fin.com/click?campaign_id=1&ref_id=referrer-partner' }), 'referrer-partner');
-  assert.equal(runRedirect({ search: '' }), null);
+test('API failure and timeout fall back to the direct operator chat', async () => {
+  const failed = await runReferralPage({ fetchMode: 'error' });
+  assert.equal(failed.destination, 'https://t.me/Danil_Berdykin');
+  assert.match(failed.status, /оператор поможет вручную/i);
+
+  const timedOut = await runReferralPage({ fetchMode: 'pending' });
+  assert.equal(timedOut.destination, 'https://t.me/Danil_Berdykin');
+  assert.match(timedOut.status, /дольше обычного/i);
+});
+
+test('unexpected Telegram host, user, or empty draft is rejected', async () => {
+  for (const telegramUrl of [
+    'https://example.com/Danil_Berdykin?text=code',
+    'https://t.me/another_user?text=code',
+    'https://t.me/Danil_Berdykin'
+  ]) {
+    const result = await runReferralPage({
+      responsePayload: { ok: true, code: 'K7M4Q', telegram_url: telegramUrl }
+    });
+    assert.equal(result.destination, 'https://t.me/Danil_Berdykin');
+    assert.match(result.status, /не удалось проверить/i);
+  }
 });
 
 test('shared tracking keeps attribution even when cookie persistence throws', () => {

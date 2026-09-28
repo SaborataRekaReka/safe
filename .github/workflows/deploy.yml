@@ -66,7 +66,23 @@ jobs:
               'telegram_bot_token' => '${{ secrets[matrix.bot_secret_name] }}',
               'telegram_chat_id' => '${{ secrets[matrix.chat_secret_name] }}',
               'telegram_proxy' => '${{ secrets[matrix.proxy_secret_name] }}',
-              'telegram_resolve_ip' => '${{ secrets[matrix.resolve_ip_secret_name] }}'
+              'telegram_resolve_ip' => '${{ secrets[matrix.resolve_ip_secret_name] }}',
+              'bitrix_webhook_url' => '${{ secrets.BITRIX_WEBHOOK_URL }}',
+              'wazzup_webhook_secret' => '${{ secrets.WAZZUP_WEBHOOK_SECRET }}',
+              'wazzup_channel_id' => '42cc9ad8-943e-4998-812e-009ce0898de5',
+              'telegram_operator_username' => 'Danil_Berdykin',
+              'data_dir' => '/var/www/fastuser/data/private/safe-fin-referral'
             ];
             PHP
+            chown fastuser:fastuser .lead-secrets.php
             chmod 600 .lead-secrets.php
+            install -d -m 700 -o fastuser -g fastuser /var/www/fastuser/data/private/safe-fin-referral
+
+            if command -v crontab >/dev/null 2>&1; then
+              cron_marker='# SAFE_WAZZUP_ATTRIBUTION_DRAIN'
+              cron_job="* * * * * /usr/bin/php /var/www/fastuser/data/www/safe-fin.com/referral-drain.php >/dev/null 2>&1 $cron_marker"
+              {
+                crontab -u fastuser -l 2>/dev/null | grep -Fv "$cron_marker" || true
+                printf '%s\n' "$cron_job"
+              } | crontab -u fastuser -
+            fi

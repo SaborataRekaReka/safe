@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Переход в Telegram | SAFE</title>
-    <meta name="description" content="Быстрый переход в Telegram-бот SAFE" />
+    <meta name="description" content="Переход в Telegram к оператору SAFE" />
     <meta name="robots" content="noindex, nofollow, noarchive" />
     <meta property="og:title" content="Переход в Telegram | SAFE" />
-    <meta property="og:description" content="Быстрый переход в Telegram-бот SAFE" />
+    <meta property="og:description" content="Переход в Telegram к оператору SAFE" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://safe-fin.com/partner_link" />
     <meta property="og:site_name" content="SAFE" />
@@ -15,9 +15,12 @@
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="apple-touch-icon" href="assets/favicon.svg" />
 
-    <!-- Google Tag Manager -->
+    <!-- Google Tag Manager. QA visits are excluded by the qa=1 flag. -->
     <script>
       (function (w, d, s, l, i) {
+        try {
+          if (new URLSearchParams(w.location.search || '').get('qa') === '1') return;
+        } catch (_error) {}
         w[l] = w[l] || [];
         w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
         var f = d.getElementsByTagName(s)[0];
@@ -30,7 +33,6 @@
     </script>
     <!-- End Google Tag Manager -->
 
-    <!-- Keep the redirect usable without waiting for a separate CSS response. -->
     <style>
       @font-face {
         font-family: "Ubuntu";
@@ -56,56 +58,25 @@
         font-display: swap;
       }
 
-
-      * { box-sizing: border-box; }
-      html, body { margin: 0; min-height: 100%; }
-      body { color: #fff; font-family: "Ubuntu", Arial, sans-serif; overflow-x: hidden; }
-      .partner-redirect__cta { display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 14px 60px; border: 2px solid #fff; border-radius: 30px; color: #fff; background: transparent; text-decoration: none; font-size: 16px; font-weight: 500; line-height: 1.2; transition: background-color .2s ease, color .2s ease; }
-      .partner-redirect__cta:hover, .partner-redirect__cta:focus-visible { background: #fff; color: #000; }
-
-      .bot-redirect-timer {
-        width: 146px;
-        height: 146px;
-        margin: 4px auto 8px;
-        position: relative;
-        display: grid;
-        place-items: center;
+      * {
+        box-sizing: border-box;
       }
 
-      .bot-redirect-timer__svg {
-        width: 146px;
-        height: 146px;
-        transform: rotate(-90deg);
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
       }
 
-      .bot-redirect-timer__track,
-      .bot-redirect-timer__progress {
-        fill: none;
-        stroke-width: 7;
-      }
-
-      .bot-redirect-timer__track {
-        stroke: rgba(255, 255, 255, 0.2);
-      }
-
-      .bot-redirect-timer__progress {
-        stroke: #61c0be;
-        stroke-linecap: round;
-        filter: drop-shadow(0 0 10px rgba(97, 192, 190, 0.45));
-      }
-
-      .bot-redirect-timer__value {
-        position: absolute;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        font-size: 44px;
-        font-weight: 700;
-        line-height: 1;
+      body {
         color: #fff;
-        text-shadow: 0 6px 24px rgba(0, 5, 33, 0.7);
+        font-family: "Ubuntu", Arial, sans-serif;
+        overflow-x: hidden;
       }
 
+      [hidden] {
+        display: none !important;
+      }
 
       .page--partner-link {
         min-height: 100vh;
@@ -151,13 +122,13 @@
         position: relative;
         z-index: 1;
         width: min(560px, 100%);
-        border-radius: 24px;
         border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 24px;
+        padding: 34px 32px 30px;
+        text-align: center;
         background: linear-gradient(165deg, rgba(8, 19, 66, 0.92), rgba(3, 10, 38, 0.9));
         box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
         backdrop-filter: blur(10px);
-        padding: 34px 32px 30px;
-        text-align: center;
       }
 
       .partner-redirect__brand {
@@ -179,7 +150,8 @@
 
       .partner-redirect__status {
         margin: 14px auto 0;
-        max-width: 420px;
+        max-width: 440px;
+        min-height: 54px;
         color: rgba(255, 255, 255, 0.92);
         font-size: 18px;
         line-height: 1.5;
@@ -187,6 +159,48 @@
 
       .partner-redirect__timer {
         margin: 18px auto 0;
+      }
+
+      .bot-redirect-timer {
+        width: 146px;
+        height: 146px;
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+
+      .bot-redirect-timer__svg {
+        width: 146px;
+        height: 146px;
+        transform: rotate(-90deg);
+      }
+
+      .bot-redirect-timer__track,
+      .bot-redirect-timer__progress {
+        fill: none;
+        stroke-width: 7;
+      }
+
+      .bot-redirect-timer__track {
+        stroke: rgba(255, 255, 255, 0.2);
+      }
+
+      .bot-redirect-timer__progress {
+        stroke: #61c0be;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 10px rgba(97, 192, 190, 0.45));
+      }
+
+      .bot-redirect-timer__value {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 44px;
+        line-height: 1;
+        font-weight: 700;
+        text-shadow: 0 6px 24px rgba(0, 5, 33, 0.7);
       }
 
       .partner-redirect__countdown {
@@ -204,6 +218,31 @@
 
       .partner-redirect__cta {
         min-width: 280px;
+        min-height: 60px;
+        padding: 14px 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        border-radius: 30px;
+        color: #fff;
+        background: transparent;
+        text-decoration: none;
+        font-size: 16px;
+        line-height: 1.2;
+        font-weight: 500;
+        transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+      }
+
+      .partner-redirect__cta:hover,
+      .partner-redirect__cta:focus-visible {
+        color: #000;
+        background: #fff;
+      }
+
+      .partner-redirect__cta[aria-disabled="true"] {
+        opacity: 0.58;
+        pointer-events: none;
       }
 
       @media (max-width: 860px) {
@@ -251,9 +290,9 @@
         }
 
         .partner-redirect__timer {
+          margin-top: 8px;
           transform: scale(0.88);
           transform-origin: center;
-          margin-top: 8px;
         }
 
         .partner-redirect__countdown {
@@ -277,15 +316,7 @@
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GT-PLW52GW" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 
-    <main
-      class="partner-redirect"
-      data-go-bot-page
-      data-go-bot-force-redirect="true"
-      data-go-bot-redirect-delay-ms="3000"
-      data-go-bot-ready-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
-      data-go-bot-missing-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
-      data-go-bot-redirect-text="Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом"
-    >
+    <main class="partner-redirect" data-referral-page data-referral-redirect-delay-ms="3000">
       <div class="partner-redirect__ambient partner-redirect__ambient--one" aria-hidden="true"></div>
       <div class="partner-redirect__ambient partner-redirect__ambient--two" aria-hidden="true"></div>
 
@@ -295,37 +326,35 @@
         </a>
 
         <h1 class="partner-redirect__title">Переход в Telegram</h1>
-        <p class="partner-redirect__status" data-go-bot-status>Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом</p>
+        <p class="partner-redirect__status" data-referral-status>Готовим персональную ссылку на диалог с оператором…</p>
 
-        <div class="bot-redirect-timer partner-redirect__timer" data-partner-link-timer>
+        <div class="bot-redirect-timer partner-redirect__timer" data-partner-link-timer hidden>
           <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true">
             <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50"></circle>
-            <circle
-              class="bot-redirect-timer__progress"
-              cx="60"
-              cy="60"
-              r="50"
-              data-partner-link-ring
-            ></circle>
+            <circle class="bot-redirect-timer__progress" cx="60" cy="60" r="50" data-partner-link-ring></circle>
           </svg>
           <div class="bot-redirect-timer__value" data-partner-link-seconds>3</div>
         </div>
 
-        <p class="partner-redirect__countdown">
+        <p class="partner-redirect__countdown" data-partner-link-countdown hidden>
           Переход через <span data-partner-link-seconds-inline>3</span> сек.
         </p>
 
         <div class="partner-redirect__actions">
           <a
-            class="partner-redirect__cta btn btn--size-cta btn--outline-light"
-            data-go-bot-link
-            href="https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds"
+            class="partner-redirect__cta"
+            data-referral-link
+            href="https://t.me/Danil_Berdykin"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Перейти сейчас
+            Открыть Telegram
           </a>
         </div>
+
+        <noscript>
+          <p class="partner-redirect__status">Автоматический код недоступен без JavaScript. Откройте Telegram и напишите оператору вручную.</p>
+        </noscript>
       </section>
     </main>
 
@@ -333,302 +362,99 @@
       (function () {
         'use strict';
 
-        var DEFAULT_BOT_LINK = 'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds';
-        var METRIKA_COUNTER_ID = '96288338';
-        var STORAGE_KEY = 'partner_code';
-        var COOKIE_KEY = 'partner_code';
-        var MAX_PARTNER_CODE_LENGTH = 100;
+        var API_PATH = '/referral-start.php';
+        var OPERATOR_USERNAME = 'danil_berdykin';
+        var FALLBACK_TELEGRAM_URL = 'https://t.me/Danil_Berdykin';
+        var API_TIMEOUT_MS = 5000;
+        var MAX_PARAM_LENGTH = 2000;
 
-        var pageRoot = document.querySelector('[data-go-bot-page]');
-        if (!pageRoot) {
-          return;
-        }
+        var pageRoot = document.querySelector('[data-referral-page]');
+        if (!pageRoot) return;
 
-        function sanitizeCode(value) {
-          if (value === null || value === undefined) {
-            return null;
-          }
-
-          var normalized = String(value).trim();
-          if (!normalized) {
-            return null;
-          }
-
-          if (normalized.length > MAX_PARTNER_CODE_LENGTH) {
-            normalized = normalized.slice(0, MAX_PARTNER_CODE_LENGTH);
-          }
-
-          return normalized;
-        }
-
-        function readCookieValue(key) {
-          var source = '';
-          try {
-            source = document.cookie || '';
-          } catch (_error) {
-            return null;
-          }
-          if (!source) {
-            return null;
-          }
-
-          var parts = source.split(';');
-          for (var i = 0; i < parts.length; i += 1) {
-            var part = parts[i].trim();
-            if (!part) {
-              continue;
-            }
-
-            var separator = part.indexOf('=');
-            if (separator <= 0) {
-              continue;
-            }
-
-            var name = safeDecode(part.slice(0, separator).trim());
-            if (name !== key) {
-              continue;
-            }
-
-            return safeDecode(part.slice(separator + 1));
-          }
-
-          return null;
-        }
-
-        function safeDecode(value) {
-          try {
-            return decodeURIComponent(value);
-          } catch (_error) {
-            return value;
-          }
-        }
-
-        function writeCookieValue(key, value) {
-          var maxAgeSeconds = 30 * 24 * 60 * 60;
-          var cookieString =
-            encodeURIComponent(key) +
-            '=' +
-            encodeURIComponent(value) +
-            '; path=/; max-age=' +
-            maxAgeSeconds +
-            '; SameSite=Lax' +
-            (window.location.protocol === 'https:' ? '; Secure' : '');
-
-          try {
-            document.cookie = cookieString;
-          } catch (_error) {
-            // Keep the URL code and continue even when the webview blocks storage.
-          }
-        }
-
-        function appendPartnerCode(url, partnerCode) {
-          if (!partnerCode) {
-            return url;
-          }
-
-          try {
-            var parsed = new URL(url);
-            parsed.searchParams.set(STORAGE_KEY, partnerCode);
-            return parsed.toString();
-          } catch (_error) {
-            return url;
-          }
-        }
-
-        function getPartnerCodeFromSearch(search) {
-          var params = new URLSearchParams(search || '');
-
-          return (
-            sanitizeCode(params.get('partner_code')) ||
-            sanitizeCode(params.get('a_aid')) ||
-            sanitizeCode(params.get('ref_id'))
-          );
-        }
-
-        function hasRefIdInSearch(search) {
-          var params = new URLSearchParams(search || '');
-          return params.has('ref_id') && !!sanitizeCode(params.get('ref_id'));
-        }
-
-        function resolvePartnerCodeFromUrl() {
-          return getPartnerCodeFromSearch(window.location.search || '');
-        }
-
-        function resolvePartnerCodeFromReferrer() {
-          if (!document.referrer) {
-            return null;
-          }
-
-          try {
-            var referrerUrl = new URL(document.referrer);
-            return getPartnerCodeFromSearch(referrerUrl.search || '');
-          } catch (_error) {
-            return null;
-          }
-        }
-
-        function sendMetrikaHit(partnerCode) {
-          var requestUrl = '';
-
-          try {
-            var params = new URLSearchParams();
-            params.set('ut', 'noindex');
-            params.set('rand', String(Date.now()) + String(Math.floor(Math.random() * 10000)));
-            params.set('page-url', window.location.href);
-            params.set('page-ref', document.referrer || '');
-            params.set('page-title', document.title || '');
-
-            if (partnerCode) {
-              params.set('partner_code', partnerCode);
-            }
-
-            requestUrl = 'https://mc.yandex.ru/watch/' + METRIKA_COUNTER_ID + '?' + params.toString();
-
-            if (navigator.sendBeacon && navigator.sendBeacon(requestUrl, '')) {
-              return;
-            }
-
-            fetch(requestUrl, {
-              mode: 'no-cors',
-              keepalive: true,
-              cache: 'no-store'
-            }).catch(function () {});
-          } catch (_error) {
-            if (!requestUrl) {
-              return;
-            }
-
-            // Final fallback for older browsers.
-            var beaconImage = new Image();
-            beaconImage.src = requestUrl;
-          }
-        }
-
-        var rawDelay = Number(pageRoot.getAttribute('data-go-bot-redirect-delay-ms'));
-        var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
-        var hasRefIdInCurrentUrl = hasRefIdInSearch(window.location.search || '');
-
-        var statusNode = document.querySelector('[data-go-bot-status]');
-        var ctaNode = document.querySelector('[data-go-bot-link]');
-
-        var resolvedPartnerCode = null;
-        var partnerCodeSource = 'none';
-
-        try {
-          resolvedPartnerCode = sanitizeCode(window.localStorage.getItem(STORAGE_KEY));
-          if (resolvedPartnerCode) {
-            partnerCodeSource = 'storage';
-          }
-        } catch (_error) {
-          resolvedPartnerCode = null;
-        }
-
-        if (!resolvedPartnerCode) {
-          resolvedPartnerCode = sanitizeCode(readCookieValue(COOKIE_KEY));
-          if (resolvedPartnerCode) {
-            partnerCodeSource = 'cookie';
-          }
-        }
-
-        if (!resolvedPartnerCode) {
-          resolvedPartnerCode = resolvePartnerCodeFromUrl();
-          if (resolvedPartnerCode) {
-            partnerCodeSource = 'url';
-          }
-        }
-
-        if (!resolvedPartnerCode) {
-          resolvedPartnerCode = resolvePartnerCodeFromReferrer();
-          if (resolvedPartnerCode) {
-            partnerCodeSource = 'referrer';
-          }
-        }
-
-        if (resolvedPartnerCode) {
-          try {
-            window.localStorage.setItem(STORAGE_KEY, resolvedPartnerCode);
-          } catch (_error) {
-            // Ignore storage errors.
-          }
-
-          writeCookieValue(COOKIE_KEY, resolvedPartnerCode);
-        }
-
-        var baseBotUrl = ctaNode ? ctaNode.getAttribute('href') || DEFAULT_BOT_LINK : DEFAULT_BOT_LINK;
-        var redirectUrl = appendPartnerCode(baseBotUrl, resolvedPartnerCode);
-
-        function trackEvent(event) {
-          try {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push(event);
-          } catch (_error) {
-            // Analytics is optional; it must never stop navigation.
-          }
-        }
-
-        trackEvent({
-          event: 'partner_link_view',
-          partner_code: resolvedPartnerCode || '',
-          partner_code_source: partnerCodeSource,
-          redirect_delay_ms: totalMs
-        });
-
-        if (!hasRefIdInCurrentUrl) {
-          trackEvent({
-            event: 'partner_link_missing_ref_id',
-            partner_code: resolvedPartnerCode || '',
-            partner_code_source: partnerCodeSource,
-            recovered_from_referrer: partnerCodeSource === 'referrer',
-            page_url: window.location.href,
-            referrer: document.referrer || ''
-          });
-        }
-
-        if (ctaNode && ctaNode.getAttribute('href') !== redirectUrl) {
-          ctaNode.setAttribute('href', redirectUrl);
-        }
-
-        if (ctaNode) {
-          ctaNode.addEventListener('click', function () {
-            trackEvent({
-              event: 'partner_link_manual_click',
-              partner_code: resolvedPartnerCode || ''
-            });
-          });
-        }
-
-        if (statusNode) {
-          statusNode.textContent = 'Спасибо за обращение! Сейчас вы перейдете в диалог с оператором. Он ответит на ваши вопросы и поможет с переводом';
-        }
-
-        try {
-          // Warm up DNS/TLS so redirect to BotHelp starts faster.
-          var warmupUrl = new URL(redirectUrl);
-          fetch(warmupUrl.origin + '/', { mode: 'no-cors', cache: 'no-store', keepalive: true }).catch(function () {});
-        } catch (_error) {
-          // Ignore warmup failures.
-        }
-
+        var statusNode = document.querySelector('[data-referral-status]');
+        var ctaNode = document.querySelector('[data-referral-link]');
+        var timerNode = document.querySelector('[data-partner-link-timer]');
+        var countdownNode = document.querySelector('[data-partner-link-countdown]');
         var ringNode = document.querySelector('[data-partner-link-ring]');
         var secondsNodes = document.querySelectorAll('[data-partner-link-seconds], [data-partner-link-seconds-inline]');
+        var params = new URLSearchParams(window.location.search || '');
+        var qaMode = params.get('qa') === '1';
+        var refId = readExactParam(params, 'ref_id');
+        var clickId = readExactParam(params, 'click_id');
+        var rawDelay = Number(pageRoot.getAttribute('data-referral-redirect-delay-ms'));
+        var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
         var timerCircumference = 314.1592653589793;
-        var startTs = Date.now();
+        var redirectUrl = FALLBACK_TELEGRAM_URL;
+        var preparing = true;
+        var countdownStarted = false;
         var redirected = false;
 
-        function redirectNow() {
-          if (redirected) {
-            return;
-          }
+        if (ctaNode) ctaNode.setAttribute('aria-disabled', 'true');
 
+        function readExactParam(searchParams, name) {
+          if (!searchParams.has(name)) return null;
+          var value = searchParams.get(name);
+          if (typeof value !== 'string' || !value.trim() || value.length > MAX_PARAM_LENGTH) return null;
+          return value;
+        }
+
+        function trackEvent(name, details) {
+          if (qaMode) return;
+          try {
+            window.dataLayer = window.dataLayer || [];
+            var event = { event: name };
+            var source = details || {};
+            Object.keys(source).forEach(function (key) { event[key] = source[key]; });
+            window.dataLayer.push(event);
+          } catch (_error) {
+            // Analytics must never interrupt the transition.
+          }
+        }
+
+        function isExpectedTelegramUrl(value) {
+          try {
+            var parsed = new URL(value);
+            var hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+            var pathParts = parsed.pathname.split('/').filter(Boolean);
+            var targetUsername = pathParts.length ? decodeURIComponent(pathParts[0]).toLowerCase() : '';
+
+            return (
+              parsed.protocol === 'https:' &&
+              !parsed.username &&
+              !parsed.password &&
+              (hostname === 't.me' || hostname === 'telegram.me') &&
+              targetUsername === OPERATOR_USERNAME &&
+              !!(parsed.searchParams.get('text') || '').trim()
+            );
+          } catch (_error) {
+            return false;
+          }
+        }
+
+        function setStatus(message) {
+          if (statusNode) statusNode.textContent = message;
+        }
+
+        function enableTelegramLink(url) {
+          redirectUrl = url;
+          preparing = false;
+          if (!ctaNode) return;
+          ctaNode.setAttribute('href', url);
+          ctaNode.removeAttribute('aria-disabled');
+        }
+
+        function redirectNow() {
+          if (redirected) return;
           redirected = true;
-          trackEvent({
-            event: 'partner_link_auto_redirect',
-            partner_code: resolvedPartnerCode || ''
+          trackEvent('partner_link_auto_redirect', {
+            ref_id: refId || '',
+            has_click_id: !!clickId,
+            attributed: redirectUrl !== FALLBACK_TELEGRAM_URL
           });
           window.location.replace(redirectUrl);
         }
 
-        function render(remainingMs) {
+        function renderTimer(remainingMs) {
           var safeRemaining = Math.max(0, Math.min(totalMs, remainingMs));
           var progress = 1 - safeRemaining / totalMs;
 
@@ -639,35 +465,143 @@
 
           var secondsLeft = Math.max(0, Math.ceil(safeRemaining / 1000));
           for (var i = 0; i < secondsNodes.length; i += 1) {
-            var node = secondsNodes[i];
-            var nextValue = String(secondsLeft);
-            if (node.textContent !== nextValue) {
-              node.textContent = nextValue;
-            }
+            secondsNodes[i].textContent = String(secondsLeft);
           }
         }
 
-        render(totalMs);
+        function startCountdown(url, statusMessage, outcome) {
+          if (countdownStarted) return;
+          countdownStarted = true;
+          enableTelegramLink(url);
+          setStatus(statusMessage);
+          if (timerNode) timerNode.hidden = false;
+          if (countdownNode) countdownNode.hidden = false;
 
-        var tickInterval = window.setInterval(function () {
-          var elapsedMs = Date.now() - startTs;
-          var remainingMs = Math.max(0, totalMs - elapsedMs);
-          render(remainingMs);
+          trackEvent('partner_link_ready', {
+            ref_id: refId || '',
+            has_click_id: !!clickId,
+            outcome: outcome
+          });
 
-          if (remainingMs <= 0) {
-            window.clearInterval(tickInterval);
-            redirectNow();
-          }
-        }, 100);
+          var startTs = Date.now();
+          renderTimer(totalMs);
+          var tickInterval = window.setInterval(function () {
+            var remainingMs = Math.max(0, totalMs - (Date.now() - startTs));
+            renderTimer(remainingMs);
+            if (remainingMs <= 0) {
+              window.clearInterval(tickInterval);
+              redirectNow();
+            }
+          }, 100);
 
-        // Fallback in case interval throttles in background tabs.
-        window.setTimeout(redirectNow, totalMs + 250);
+          // Background tabs may throttle intervals.
+          window.setTimeout(redirectNow, totalMs + 250);
+        }
 
-        // Schedule optional measurement only after the transition is ready.
-        window.setTimeout(function () { sendMetrikaHit(resolvedPartnerCode); }, 0);
+        function useFallback(message, outcome) {
+          startCountdown(FALLBACK_TELEGRAM_URL, message, outcome);
+        }
+
+        if (ctaNode) {
+          ctaNode.addEventListener('click', function (event) {
+            if (preparing) {
+              event.preventDefault();
+              return;
+            }
+            trackEvent('partner_link_manual_click', {
+              ref_id: refId || '',
+              has_click_id: !!clickId,
+              attributed: redirectUrl !== FALLBACK_TELEGRAM_URL
+            });
+          });
+        }
+
+        trackEvent('partner_link_view', {
+          ref_id: refId || '',
+          has_click_id: !!clickId
+        });
+
+        if (!refId) {
+          useFallback(
+            'В ссылке нет партнёрской метки. Откроем прямой чат с оператором без привязки обращения.',
+            'missing_ref_id'
+          );
+          return;
+        }
+
+        if (typeof window.fetch !== 'function') {
+          useFallback(
+            'Не удалось подготовить код обращения. Откроем прямой чат — оператор поможет вручную.',
+            'fetch_unavailable'
+          );
+          return;
+        }
+
+        var endpoint = API_PATH + (qaMode ? '?qa=1' : '');
+        var requestBody = {
+          ref_id: refId,
+          page_url: window.location.href
+        };
+        if (clickId) requestBody.click_id = clickId;
+
+        var requestSettled = false;
+        var requestTimeout = window.setTimeout(function () {
+          if (requestSettled) return;
+          requestSettled = true;
+          useFallback(
+            'Сервис отвечает дольше обычного. Откроем прямой чат — оператор поможет вручную.',
+            'api_timeout'
+          );
+        }, API_TIMEOUT_MS);
+
+        window.fetch(endpoint, {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        })
+          .then(function (response) {
+            if (!response || !response.ok) throw new Error('Referral API rejected the request');
+            return response.json();
+          })
+          .then(function (payload) {
+            if (requestSettled) return;
+            requestSettled = true;
+            window.clearTimeout(requestTimeout);
+
+            if (!payload || payload.ok !== true || !isExpectedTelegramUrl(payload.telegram_url)) {
+              useFallback(
+                'Не удалось проверить персональную ссылку. Откроем прямой чат — оператор поможет вручную.',
+                'invalid_api_response'
+              );
+              return;
+            }
+
+            var displayCode = typeof payload.code === 'string' && /^[A-Z0-9-]{4,32}$/i.test(payload.code)
+              ? ' Код обращения: ' + payload.code + '.'
+              : '';
+            startCountdown(
+              payload.telegram_url,
+              'Ссылка готова.' + displayCode + ' В Telegram нажмите «Отправить», чтобы оператор получил сообщение.',
+              'attributed'
+            );
+          })
+          .catch(function () {
+            if (requestSettled) return;
+            requestSettled = true;
+            window.clearTimeout(requestTimeout);
+            useFallback(
+              'Не удалось подготовить код обращения. Откроем прямой чат — оператор поможет вручную.',
+              'api_error'
+            );
+          });
       })();
     </script>
 
-    <noscript><img src="https://mc.yandex.ru/watch/96288338" style="position:absolute; left:-9999px;" alt="" /></noscript>
+    <noscript><img src="https://mc.yandex.ru/watch/96288338" style="position:absolute; left:-9999px" alt="" /></noscript>
   </body>
 </html>

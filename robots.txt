@@ -8,6 +8,8 @@ Disallow: /test-bot
 Disallow: /test-bot.html
 Disallow: /lead-submit.php
 Disallow: /lead-submit-v2.php
+Disallow: /referral-start.php
+Disallow: /wazzup-bitrix-webhook.php
 Disallow: /privacy-policy
 Disallow: /privacy-policy.html
 Disallow: /cookies-policy
