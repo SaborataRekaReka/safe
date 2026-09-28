@@ -4,6 +4,8 @@ Disallow: /martrust
 Disallow: /martrust.html
 Disallow: /partner_link
 Disallow: /partner_link.html
+Disallow: /seamen_link
+Disallow: /seamen_link.html
 Disallow: /test-bot
 Disallow: /test-bot.html
 Disallow: /lead-submit.php

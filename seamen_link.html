@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Переход в Telegram | SAFE</title>
+    <meta name="description" content="Переход в Telegram к оператору SAFE" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta property="og:title" content="Переход в Telegram | SAFE" />
+    <meta property="og:description" content="Переход в Telegram к оператору SAFE" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://safe-fin.com/seamen_link" />
+    <meta property="og:site_name" content="SAFE" />
+
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+
+    <!-- Google Tag Manager. QA visits are excluded by the qa=1 flag. -->
+    <script>
+      (function (w, d, s, l, i) {
+        try {
+          if (new URLSearchParams(w.location.search || '').get('qa') === '1') return;
+        } catch (_error) {}
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0];
+        var j = d.createElement(s);
+        var dl = l !== 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GT-PLW52GW');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <style>
+      @font-face {
+        font-family: "Ubuntu";
+        src: url("assets/fonts/ubuntu-400.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Ubuntu";
+        src: url("assets/fonts/ubuntu-500.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: "Ubuntu";
+        src: url("assets/fonts/ubuntu-700.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        color: #fff;
+        font-family: "Ubuntu", Arial, sans-serif;
+        overflow-x: hidden;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .page--partner-link {
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 14% 16%, rgba(97, 192, 190, 0.24), rgba(0, 5, 33, 0) 42%),
+          radial-gradient(circle at 84% 10%, rgba(74, 136, 238, 0.22), rgba(0, 5, 33, 0) 46%),
+          linear-gradient(145deg, #000521 0%, #00113d 52%, #000521 100%);
+      }
+
+      .partner-redirect {
+        position: relative;
+        min-height: 100vh;
+        padding: 28px;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .partner-redirect__ambient {
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(4px);
+        pointer-events: none;
+      }
+
+      .partner-redirect__ambient--one {
+        top: -120px;
+        left: -90px;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, rgba(97, 192, 190, 0.3) 0%, rgba(97, 192, 190, 0) 72%);
+      }
+
+      .partner-redirect__ambient--two {
+        right: -120px;
+        bottom: -150px;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(92, 145, 255, 0.3) 0%, rgba(92, 145, 255, 0) 72%);
+      }
+
+      .partner-redirect__card {
+        position: relative;
+        z-index: 1;
+        width: min(560px, 100%);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 24px;
+        padding: 34px 32px 30px;
+        text-align: center;
+        background: linear-gradient(165deg, rgba(8, 19, 66, 0.92), rgba(3, 10, 38, 0.9));
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+        backdrop-filter: blur(10px);
+      }
+
+      .partner-redirect__brand {
+        display: inline-flex;
+      }
+
+      .partner-redirect__brand img {
+        width: 166px;
+        height: auto;
+      }
+
+      .partner-redirect__title {
+        margin: 20px 0 0;
+        color: #fff;
+        font-size: 42px;
+        line-height: 1.16;
+        font-weight: 700;
+      }
+
+      .partner-redirect__status {
+        margin: 14px auto 0;
+        max-width: 440px;
+        min-height: 54px;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .partner-redirect__timer {
+        margin: 18px auto 0;
+      }
+
+      .bot-redirect-timer {
+        width: 146px;
+        height: 146px;
+        position: relative;
+        display: grid;
+        place-items: center;
+      }
+
+      .bot-redirect-timer__svg {
+        width: 146px;
+        height: 146px;
+        transform: rotate(-90deg);
+      }
+
+      .bot-redirect-timer__track,
+      .bot-redirect-timer__progress {
+        fill: none;
+        stroke-width: 7;
+      }
+
+      .bot-redirect-timer__track {
+        stroke: rgba(255, 255, 255, 0.2);
+      }
+
+      .bot-redirect-timer__progress {
+        stroke: #61c0be;
+        stroke-linecap: round;
+        filter: drop-shadow(0 0 10px rgba(97, 192, 190, 0.45));
+      }
+
+      .bot-redirect-timer__value {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 44px;
+        line-height: 1;
+        font-weight: 700;
+        text-shadow: 0 6px 24px rgba(0, 5, 33, 0.7);
+      }
+
+      .partner-redirect__countdown {
+        margin: 10px 0 0;
+        color: #fff;
+        font-size: 16px;
+        line-height: 1.45;
+      }
+
+      .partner-redirect__actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .partner-redirect__cta {
+        min-width: 280px;
+        min-height: 60px;
+        padding: 14px 60px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        border-radius: 30px;
+        color: #fff;
+        background: transparent;
+        text-decoration: none;
+        font-size: 16px;
+        line-height: 1.2;
+        font-weight: 500;
+        transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+      }
+
+      .partner-redirect__cta:hover,
+      .partner-redirect__cta:focus-visible {
+        color: #000;
+        background: #fff;
+      }
+
+      .partner-redirect__cta[aria-disabled="true"] {
+        opacity: 0.58;
+        pointer-events: none;
+      }
+
+      @media (max-width: 860px) {
+        .partner-redirect {
+          padding: 22px;
+        }
+
+        .partner-redirect__card {
+          border-radius: 20px;
+          padding: 28px 22px 24px;
+        }
+
+        .partner-redirect__title {
+          margin-top: 18px;
+          font-size: 34px;
+        }
+
+        .partner-redirect__status {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .partner-redirect {
+          padding: 16px;
+        }
+
+        .partner-redirect__card {
+          border-radius: 18px;
+          padding: 24px 16px 20px;
+        }
+
+        .partner-redirect__brand img {
+          width: 136px;
+        }
+
+        .partner-redirect__title {
+          margin-top: 16px;
+          font-size: 29px;
+        }
+
+        .partner-redirect__status {
+          margin-top: 12px;
+          font-size: 15px;
+        }
+
+        .partner-redirect__timer {
+          margin-top: 8px;
+          transform: scale(0.88);
+          transform-origin: center;
+        }
+
+        .partner-redirect__countdown {
+          margin-top: 2px;
+          font-size: 14px;
+        }
+
+        .partner-redirect__actions {
+          margin-top: 14px;
+        }
+
+        .partner-redirect__cta {
+          width: 100%;
+          min-width: 0;
+        }
+      }
+    </style>
+  </head>
+  <body class="page page--partner-link">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GT-PLW52GW" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <main class="partner-redirect" data-referral-page data-referral-redirect-delay-ms="3000">
+      <div class="partner-redirect__ambient partner-redirect__ambient--one" aria-hidden="true"></div>
+      <div class="partner-redirect__ambient partner-redirect__ambient--two" aria-hidden="true"></div>
+
+      <section class="partner-redirect__card" aria-live="polite">
+        <a class="partner-redirect__brand" href="/" aria-label="SAFE">
+          <img src="assets/safe-logo.svg" alt="SAFE" />
+        </a>
+
+        <h1 class="partner-redirect__title">Переход в Telegram</h1>
+        <p class="partner-redirect__status" data-referral-status>Готовим персональную ссылку на диалог с оператором…</p>
+
+        <div class="bot-redirect-timer partner-redirect__timer" data-partner-link-timer hidden>
+          <svg class="bot-redirect-timer__svg" viewBox="0 0 120 120" role="presentation" aria-hidden="true">
+            <circle class="bot-redirect-timer__track" cx="60" cy="60" r="50"></circle>
+            <circle class="bot-redirect-timer__progress" cx="60" cy="60" r="50" data-partner-link-ring></circle>
+          </svg>
+          <div class="bot-redirect-timer__value" data-partner-link-seconds>3</div>
+        </div>
+
+        <p class="partner-redirect__countdown" data-partner-link-countdown hidden>
+          Переход через <span data-partner-link-seconds-inline>3</span> сек.
+        </p>
+
+        <div class="partner-redirect__actions">
+          <a
+            class="partner-redirect__cta"
+            data-referral-link
+            href="https://t.me/Danil_Berdykin"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Открыть Telegram
+          </a>
+        </div>
+
+        <noscript>
+          <p class="partner-redirect__status">Автоматический код недоступен без JavaScript. Откройте Telegram и напишите оператору вручную.</p>
+        </noscript>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        'use strict';
+
+        var API_PATH = '/referral-start.php';
+        var OPERATOR_USERNAME = 'danil_berdykin';
+        var FALLBACK_TELEGRAM_URL = 'https://t.me/Danil_Berdykin';
+        var API_TIMEOUT_MS = 5000;
+        var MAX_PARAM_LENGTH = 2000;
+
+        var pageRoot = document.querySelector('[data-referral-page]');
+        if (!pageRoot) return;
+
+        var statusNode = document.querySelector('[data-referral-status]');
+        var ctaNode = document.querySelector('[data-referral-link]');
+        var timerNode = document.querySelector('[data-partner-link-timer]');
+        var countdownNode = document.querySelector('[data-partner-link-countdown]');
+        var ringNode = document.querySelector('[data-partner-link-ring]');
+        var secondsNodes = document.querySelectorAll('[data-partner-link-seconds], [data-partner-link-seconds-inline]');
+        var params = new URLSearchParams(window.location.search || '');
+        var qaMode = params.get('qa') === '1';
+        var refId = readExactParam(params, 'ref_id');
+        var clickId = readExactParam(params, 'click_id');
+        var rawDelay = Number(pageRoot.getAttribute('data-referral-redirect-delay-ms'));
+        var totalMs = Number.isFinite(rawDelay) && rawDelay >= 300 ? rawDelay : 3000;
+        var timerCircumference = 314.1592653589793;
+        var redirectUrl = FALLBACK_TELEGRAM_URL;
+        var preparing = true;
+        var countdownStarted = false;
+        var redirected = false;
+
+        if (ctaNode) ctaNode.setAttribute('aria-disabled', 'true');
+
+        function readExactParam(searchParams, name) {
+          if (!searchParams.has(name)) return null;
+          var value = searchParams.get(name);
+          if (typeof value !== 'string' || !value.trim() || value.length > MAX_PARAM_LENGTH) return null;
+          return value;
+        }
+
+        function trackEvent(name, details) {
+          if (qaMode) return;
+          try {
+            window.dataLayer = window.dataLayer || [];
+            var event = { event: name };
+            var source = details || {};
+            Object.keys(source).forEach(function (key) { event[key] = source[key]; });
+            window.dataLayer.push(event);
+          } catch (_error) {
+            // Analytics must never interrupt the transition.
+          }
+        }
+
+        function isExpectedTelegramUrl(value) {
+          try {
+            var parsed = new URL(value);
+            var hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+            var pathParts = parsed.pathname.split('/').filter(Boolean);
+            var targetUsername = pathParts.length ? decodeURIComponent(pathParts[0]).toLowerCase() : '';
+
+            return (
+              parsed.protocol === 'https:' &&
+              !parsed.username &&
+              !parsed.password &&
+              (hostname === 't.me' || hostname === 'telegram.me') &&
+              targetUsername === OPERATOR_USERNAME &&
+              !!(parsed.searchParams.get('text') || '').trim()
+            );
+          } catch (_error) {
+            return false;
+          }
+        }
+
+        function setStatus(message) {
+          if (statusNode) statusNode.textContent = message;
+        }
+
+        function enableTelegramLink(url) {
+          redirectUrl = url;
+          preparing = false;
+          if (!ctaNode) return;
+          ctaNode.setAttribute('href', url);
+          ctaNode.removeAttribute('aria-disabled');
+        }
+
+        function redirectNow() {
+          if (redirected) return;
+          redirected = true;
+          trackEvent('partner_link_auto_redirect', {
+            ref_id: refId || '',
+            has_click_id: !!clickId,
+            attributed: redirectUrl !== FALLBACK_TELEGRAM_URL
+          });
+          window.location.replace(redirectUrl);
+        }
+
+        function renderTimer(remainingMs) {
+          var safeRemaining = Math.max(0, Math.min(totalMs, remainingMs));
+          var progress = 1 - safeRemaining / totalMs;
+
+          if (ringNode) {
+            ringNode.style.strokeDasharray = String(timerCircumference);
+            ringNode.style.strokeDashoffset = String(timerCircumference * progress);
+          }
+
+          var secondsLeft = Math.max(0, Math.ceil(safeRemaining / 1000));
+          for (var i = 0; i < secondsNodes.length; i += 1) {
+            secondsNodes[i].textContent = String(secondsLeft);
+          }
+        }
+
+        function startCountdown(url, statusMessage, outcome) {
+          if (countdownStarted) return;
+          countdownStarted = true;
+          enableTelegramLink(url);
+          setStatus(statusMessage);
+          if (timerNode) timerNode.hidden = false;
+          if (countdownNode) countdownNode.hidden = false;
+
+          trackEvent('partner_link_ready', {
+            ref_id: refId || '',
+            has_click_id: !!clickId,
+            outcome: outcome
+          });
+
+          var startTs = Date.now();
+          renderTimer(totalMs);
+          var tickInterval = window.setInterval(function () {
+            var remainingMs = Math.max(0, totalMs - (Date.now() - startTs));
+            renderTimer(remainingMs);
+            if (remainingMs <= 0) {
+              window.clearInterval(tickInterval);
+              redirectNow();
+            }
+          }, 100);
+
+          // Background tabs may throttle intervals.
+          window.setTimeout(redirectNow, totalMs + 250);
+        }
+
+        function useFallback(message, outcome) {
+          startCountdown(FALLBACK_TELEGRAM_URL, message, outcome);
+        }
+
+        if (ctaNode) {
+          ctaNode.addEventListener('click', function (event) {
+            if (preparing) {
+              event.preventDefault();
+              return;
+            }
+            trackEvent('partner_link_manual_click', {
+              ref_id: refId || '',
+              has_click_id: !!clickId,
+              attributed: redirectUrl !== FALLBACK_TELEGRAM_URL
+            });
+          });
+        }
+
+        trackEvent('partner_link_view', {
+          ref_id: refId || '',
+          has_click_id: !!clickId
+        });
+
+        if (!refId) {
+          useFallback(
+            'В ссылке нет партнёрской метки. Откроем прямой чат с оператором без привязки обращения.',
+            'missing_ref_id'
+          );
+          return;
+        }
+
+        if (typeof window.fetch !== 'function') {
+          useFallback(
+            'Не удалось подготовить код обращения. Откроем прямой чат — оператор поможет вручную.',
+            'fetch_unavailable'
+          );
+          return;
+        }
+
+        var endpoint = API_PATH + (qaMode ? '?qa=1' : '');
+        var requestBody = {
+          ref_id: refId,
+          page_url: window.location.href
+        };
+        if (clickId) requestBody.click_id = clickId;
+
+        var requestSettled = false;
+        var requestTimeout = window.setTimeout(function () {
+          if (requestSettled) return;
+          requestSettled = true;
+          useFallback(
+            'Сервис отвечает дольше обычного. Откроем прямой чат — оператор поможет вручную.',
+            'api_timeout'
+          );
+        }, API_TIMEOUT_MS);
+
+        window.fetch(endpoint, {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        })
+          .then(function (response) {
+            if (!response || !response.ok) throw new Error('Referral API rejected the request');
+            return response.json();
+          })
+          .then(function (payload) {
+            if (requestSettled) return;
+            requestSettled = true;
+            window.clearTimeout(requestTimeout);
+
+            if (!payload || payload.ok !== true || !isExpectedTelegramUrl(payload.telegram_url)) {
+              useFallback(
+                'Не удалось проверить персональную ссылку. Откроем прямой чат — оператор поможет вручную.',
+                'invalid_api_response'
+              );
+              return;
+            }
+
+            var displayCode = typeof payload.code === 'string' && /^[A-Z0-9-]{4,32}$/i.test(payload.code)
+              ? ' Код обращения: ' + payload.code + '.'
+              : '';
+            startCountdown(
+              payload.telegram_url,
+              'Ссылка готова.' + displayCode + ' В Telegram нажмите «Отправить», чтобы оператор получил сообщение.',
+              'attributed'
+            );
+          })
+          .catch(function () {
+            if (requestSettled) return;
+            requestSettled = true;
+            window.clearTimeout(requestTimeout);
+            useFallback(
+              'Не удалось подготовить код обращения. Откроем прямой чат — оператор поможет вручную.',
+              'api_error'
+            );
+          });
+      })();
+    </script>
+
+    <noscript><img src="https://mc.yandex.ru/watch/96288338" style="position:absolute; left:-9999px" alt="" /></noscript>
+  </body>
+</html>

@@ -154,9 +154,11 @@
 - обновляется fallback-кнопка ручного перехода
 - при включенном флаге AUTO_REDIRECT_TO_BOT выполняется автопереход
 
-### /partner_link — атрибуция моряков
+### /partner_link и /seamen_link
 
-`/partner_link?ref_id=...&click_id=...` работает отдельно от BotHelp:
+`/partner_link` сохраняет прежний сценарий обменов и перенаправляет партнёрский трафик в BotHelp.
+
+`/seamen_link?ref_id=...&click_id=...` — отдельный сценарий для моряков, который работает без BotHelp:
 
 - `referral-start.php` сохраняет `ref_id`, необязательный `click_id` и исходную ссылку на 72 часа, создаёт короткий код обращения и возвращает ссылку на личный Telegram оператора с готовым текстом;
 - `wazzup-bitrix-webhook.php` принимает входящее сообщение Wazzup, находит код и сопоставляет Telegram `chatId` с контактом Bitrix;
@@ -164,7 +166,7 @@
 - значения записываются в поля `UF_CRM_SAFE_REF_ID`, `UF_CRM_SAFE_CLICK_ID`, `UF_CRM_SAFE_REQUEST_CODE` и `UF_CRM_SAFE_LANDING_URL`;
 - секреты `bitrix_webhook_url` и `wazzup_webhook_secret` хранятся только в `.lead-secrets.php`/GitHub Actions secrets.
 
-Проверка без учёта аналитикой: `/partner_link?ref_id=test&click_id=test-click&qa=1`.
+Проверка без учёта аналитикой: `/seamen_link?ref_id=test&click_id=test-click&qa=1`.
 
 ## Тестовая страница /test-bot
 
@@ -202,7 +204,7 @@
 
 ## Примечания по эксплуатации
 
-- Страница `/partner_link` содержит собственные встроенные стили и логику перехода к личному Telegram оператора; старый BotHelp-маршрут остаётся на `/go-bot`.
+- Страница `/partner_link` ведёт старый партнёрский трафик обменов в BotHelp; отдельная `/seamen_link` содержит логику перехода к личному Telegram оператора моряков.
 - Перед общим CSS на остальных страницах встроен фрагмент `partials/loading-guard.html`. Если CSS не отвечает 3 секунды или возвращает ошибку, страница показывает содержимое с резервным оформлением; после успешной загрузки CSS обычное оформление восстанавливается. При изменении фрагмента синхронизируйте его копии между маркерами `shared:loading-guard` во всех HTML-страницах.
 - Общие JavaScript-файлы подключаются с `defer` с сохранением порядка конфигурации, партнёрского трекинга и интерфейса.
 - Регрессионная проверка загрузки и атрибуции: `node --test tests/partner-tracking.test.js tests/availability.test.js` и `php tests/referral-integration.test.php`.

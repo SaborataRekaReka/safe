@@ -6,8 +6,67 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const partnerHtml = fs.readFileSync(path.join(root, 'partner_link.html'), 'utf8');
+const seamenHtml = fs.readFileSync(path.join(root, 'seamen_link.html'), 'utf8');
 const inlineScripts = html => Array.from(html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g), match => match[1]);
-const referralScript = inlineScripts(partnerHtml).find(script => script.includes("var API_PATH = '/referral-start.php'"));
+const redirectScript = inlineScripts(partnerHtml).find(script => script.includes('function redirectNow()'));
+const referralScript = inlineScripts(seamenHtml).find(script => script.includes("var API_PATH = '/referral-start.php'"));
+
+function runLegacyRedirect({ cookie = '', storageValue = null, blockedRead = false, blockedWrite = false, brokenAnalytics = false, search = '?ref_id=new-partner', referrer = '' } = {}) {
+  const timeouts = [];
+  const intervals = [];
+  const destinations = [];
+  const links = { href: 'https://r.bothelp.io/tg?domain=ExchSafe_bot&start=c1779906106435-ds' };
+  let elapsed = 0;
+  const cta = {
+    getAttribute: key => links[key],
+    setAttribute: (key, value) => { links[key] = value; },
+    addEventListener() {}
+  };
+  const page = { getAttribute: () => '3000' };
+  const document = {
+    referrer,
+    title: 'Переход в Telegram',
+    querySelector: selector => ({ '[data-go-bot-page]': page, '[data-go-bot-link]': cta, '[data-go-bot-status]': { textContent: '' } })[selector] || null,
+    querySelectorAll: () => []
+  };
+  Object.defineProperty(document, 'cookie', {
+    get() { if (blockedRead) throw new Error('Cookies disabled'); return cookie; },
+    set() { if (blockedWrite) throw new Error('Cookie writes disabled'); }
+  });
+  const window = {
+    document,
+    location: { search, protocol: 'https:', href: 'https://safe-fin.com/partner_link' + search, replace: url => destinations.push(url) },
+    dataLayer: brokenAnalytics ? { push() { throw new Error('Analytics failed'); } } : [],
+    setTimeout: (callback, delay) => { timeouts.push({ callback, delay }); return timeouts.length; },
+    setInterval: callback => { intervals.push(callback); return intervals.length; },
+    clearInterval() {}
+  };
+  Object.defineProperty(window, 'localStorage', {
+    get() {
+      if (blockedRead) throw new Error('Storage disabled');
+      return {
+        getItem: () => storageValue,
+        setItem() { if (blockedWrite) throw new Error('Storage writes disabled'); }
+      };
+    }
+  });
+  vm.runInNewContext(redirectScript, {
+    window, document, URL, URLSearchParams,
+    Date: { now: () => elapsed },
+    navigator: { sendBeacon: () => true },
+    fetch: () => new Promise(() => {})
+  });
+  assert.equal(destinations.length, 0, 'must preserve the visible countdown');
+  elapsed = 3000;
+  intervals.forEach(callback => callback());
+  timeouts.sort((a, b) => a.delay - b.delay).forEach(timer => timer.callback());
+  assert.equal(destinations.length, 1, 'interval and fallback timeout must not redirect twice');
+  assert.equal(links.href, destinations[0], 'manual and automatic destinations must agree');
+  const destination = new URL(destinations[0]);
+  assert.equal(destination.searchParams.get('domain'), 'ExchSafe_bot');
+  assert.equal(destination.searchParams.get('start'), 'c1779906106435-ds');
+  return destination.searchParams.get('partner_code');
+}
 
 async function runReferralPage({
   search = '?ref_id=current-partner&click_id=click-17',
@@ -49,7 +108,7 @@ async function runReferralPage({
     querySelectorAll: () => seconds
   };
 
-  const href = 'https://safe-fin.com/partner_link' + search;
+  const href = 'https://safe-fin.com/seamen_link' + search;
   const window = {
     document,
     location: {
@@ -120,11 +179,24 @@ async function runReferralPage({
   };
 }
 
-test('partner page is self-contained and no longer references BotHelp', () => {
+test('legacy partner page redirects to BotHelp and keeps first-touch attribution', () => {
+  assert.ok(redirectScript);
+  assert.match(partnerHtml, /r\.bothelp\.io/i);
+  assert.doesNotMatch(partnerHtml, /referral-start\.php/i);
+  assert.equal(runLegacyRedirect({ blockedRead: true, blockedWrite: true }), 'new-partner');
+  assert.equal(runLegacyRedirect({ blockedWrite: true, brokenAnalytics: true }), 'new-partner');
+  assert.equal(runLegacyRedirect({ cookie: 'bad%ZZ=value; partner_code=first-partner' }), 'first-partner');
+  assert.equal(runLegacyRedirect({ storageValue: 'original-partner' }), 'original-partner');
+  assert.equal(runLegacyRedirect({ search: '?a_aid=affiliate-7' }), 'affiliate-7');
+  assert.equal(runLegacyRedirect({ search: '?partner_code=partner%20%26%207' }), 'partner & 7');
+  assert.equal(runLegacyRedirect({ search: '', referrer: 'https://partners.safe-fin.com/click?campaign_id=1&ref_id=referrer-partner' }), 'referrer-partner');
+});
+
+test('seamen page is self-contained and does not reference BotHelp', () => {
   assert.ok(referralScript);
-  assert.doesNotMatch(partnerHtml, /<link[^>]+rel=["']stylesheet["']/);
-  assert.doesNotMatch(partnerHtml, /bothelp\.io/i);
-  assert.match(partnerHtml, /href="https:\/\/t\.me\/Danil_Berdykin"/);
+  assert.doesNotMatch(seamenHtml, /<link[^>]+rel=["']stylesheet["']/);
+  assert.doesNotMatch(seamenHtml, /bothelp\.io/i);
+  assert.match(seamenHtml, /href="https:\/\/t\.me\/Danil_Berdykin"/);
 });
 
 test('referral request uses exact current URL values and returned personal Telegram link', async () => {
@@ -136,7 +208,7 @@ test('referral request uses exact current URL values and returned personal Teleg
   assert.equal(result.request.url, '/referral-start.php');
   assert.equal(requestBody.ref_id, ' exact-ref ');
   assert.equal(requestBody.click_id, 'click/17');
-  assert.equal(requestBody.page_url, 'https://safe-fin.com/partner_link?partner_code=stored-is-irrelevant&ref_id=%20exact-ref%20&click_id=click%2F17');
+  assert.equal(requestBody.page_url, 'https://safe-fin.com/seamen_link?partner_code=stored-is-irrelevant&ref_id=%20exact-ref%20&click_id=click%2F17');
   assert.equal(result.destination, 'https://t.me/Danil_Berdykin?text=Hello%20K7M4Q');
   assert.match(result.status, /K7M4Q/);
 });
@@ -144,7 +216,7 @@ test('referral request uses exact current URL values and returned personal Teleg
 test('qa=1 stays on the API request and suppresses page analytics', async () => {
   const result = await runReferralPage({ search: '?ref_id=partner-7&qa=1' });
   assert.equal(result.request.url, '/referral-start.php?qa=1');
-  assert.equal(JSON.parse(result.request.options.body).page_url, 'https://safe-fin.com/partner_link?ref_id=partner-7&qa=1');
+  assert.equal(JSON.parse(result.request.options.body).page_url, 'https://safe-fin.com/seamen_link?ref_id=partner-7&qa=1');
   assert.deepEqual(result.dataLayer, []);
 });
 
